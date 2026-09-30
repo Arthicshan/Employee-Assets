@@ -73,6 +73,16 @@ export class AssignmentsService {
         },
       });
 
+      // Record the assignment in Asset History
+      await tx.assetHistory.create({
+        data: {
+          assetId: data.assetId,
+          employeeId: data.employeeId,
+          action: 'ASSIGNED',
+          notes: data.notes,
+        },
+      });
+
       return assignment;
     });
   }

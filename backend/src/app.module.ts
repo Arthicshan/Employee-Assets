@@ -7,6 +7,7 @@ import { AssetModule } from './asset/asset.module';
 import { CategoriesModule } from './categories/categories.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { ReturnsModule } from './returns/returns.module';
+import { AssetHistoryModule } from './asset-history/asset-history.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ReturnsModule } from './returns/returns.module';
     CategoriesModule,
     AssignmentsModule,
     ReturnsModule,
+    AssetHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
