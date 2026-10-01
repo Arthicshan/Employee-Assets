@@ -7,7 +7,7 @@ export class DashboardController {
     private readonly dashboardService: DashboardService,
   ) {}
 
-  @Get()
+  @Get('summary')
   getStatistics() {
     return this.dashboardService.getStatistics();
   }

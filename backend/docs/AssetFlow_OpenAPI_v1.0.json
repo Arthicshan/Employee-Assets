@@ -1,0 +1,201 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AssetFlow - Employee Asset & Inventory Management API",
+    "version": "1.0.0",
+    "description": "Production-grade RESTful API for company hardware tracking, lifecycle events, assignment workflows, and audit trails."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate user credentials",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "JWT Access Token and User profile" },
+          "401": { "description": "Invalid credentials (RFC 7807)" }
+        }
+      }
+    },
+    "/dashboard/summary": {
+      "get": {
+        "summary": "Retrieve aggregated KPI statistics and recent activity",
+        "responses": {
+          "200": { "description": "Dashboard statistics with category breakdown and recent events" }
+        }
+      }
+    },
+    "/assets": {
+      "get": {
+        "summary": "List all company assets with search, category, and status filters",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "List of assets" }
+        }
+      },
+      "post": {
+        "summary": "Register a new asset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["assetTag", "name", "category"],
+                "properties": {
+                  "assetTag": { "type": "string" },
+                  "name": { "type": "string" },
+                  "category": { "type": "string" },
+                  "brand": { "type": "string" },
+                  "model": { "type": "string" },
+                  "serialNumber": { "type": "string" },
+                  "status": { "type": "string", "enum": ["available", "assigned", "damaged", "under_repair", "retired"] },
+                  "purchaseDate": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Asset registered successfully" }
+        }
+      }
+    },
+    "/assets/{id}": {
+      "get": {
+        "summary": "Get asset details by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Asset found" }, "404": { "description": "Asset not found" } }
+      },
+      "put": {
+        "summary": "Update asset attributes",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Asset updated" } }
+      },
+      "patch": {
+        "summary": "Partial update asset attributes",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Asset updated" } }
+      },
+      "delete": {
+        "summary": "Delete asset",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Asset deleted" } }
+      }
+    },
+    "/assets/{id}/history": {
+      "get": {
+        "summary": "Get immutable chronological audit log for an asset",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Chronological audit timeline" } }
+      }
+    },
+    "/categories": {
+      "get": {
+        "summary": "List all asset categories",
+        "responses": { "200": { "description": "List of categories" } }
+      },
+      "post": {
+        "summary": "Create a new category",
+        "responses": { "201": { "description": "Category created" } }
+      }
+    },
+    "/employees": {
+      "get": {
+        "summary": "List all active company employees",
+        "responses": { "200": { "description": "List of employees" } }
+      },
+      "post": {
+        "summary": "Create an employee record",
+        "responses": { "201": { "description": "Employee created" } }
+      }
+    },
+    "/assignments": {
+      "get": {
+        "summary": "List assignments with pagination and status filters",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["ACTIVE", "RETURNED", "ALL"] } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50 } }
+        ],
+        "responses": { "200": { "description": "Paginated assignments" } }
+      },
+      "post": {
+        "summary": "Assign an available asset to an active employee",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["assetId", "employeeId"],
+                "properties": {
+                  "assetId": { "type": "integer" },
+                  "employeeId": { "type": "integer" },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Assignment recorded transactionally" },
+          "400": { "description": "Asset already assigned or unavailable" }
+        }
+      }
+    },
+    "/returns": {
+      "post": {
+        "summary": "Process asset return from custody",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["assignmentId", "condition"],
+                "properties": {
+                  "assignmentId": { "type": "integer" },
+                  "condition": { "type": "string", "enum": ["GOOD", "DAMAGED"] },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Return processed transactionally and condition recorded" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "API and database connectivity readiness probe",
+        "responses": { "200": { "description": "System healthy" } }
+      }
+    }
+  }
+}

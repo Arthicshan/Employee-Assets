@@ -10,6 +10,69 @@ import { CreateAssignmentDto } from './dto/create-assignment.dto';
 export class AssignmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findAll(params?: {
+    status?: string;
+    assetId?: number;
+    employeeId?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    const page = Math.max(1, Number(params?.page) || 1);
+    const limit = Math.max(1, Math.min(100, Number(params?.limit) || 50));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (params?.status && params.status !== 'ALL') {
+      where.status = params.status;
+    }
+    if (params?.assetId) {
+      where.assetId = Number(params.assetId);
+    }
+    if (params?.employeeId) {
+      where.employeeId = Number(params.employeeId);
+    }
+
+    const [total, data] = await Promise.all([
+      this.prisma.assetAssignment.count({ where }),
+      this.prisma.assetAssignment.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          asset: true,
+          employee: true,
+        },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      },
+    };
+  }
+
+  async findOne(id: number) {
+    const assignment = await this.prisma.assetAssignment.findUnique({
+      where: { id },
+      include: {
+        asset: true,
+        employee: true,
+      },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException(`Assignment with ID ${id} not found`);
+    }
+
+    return assignment;
+  }
+
   async create(data: CreateAssignmentDto) {
     const asset = await this.prisma.asset.findUnique({
       where: { id: data.assetId },

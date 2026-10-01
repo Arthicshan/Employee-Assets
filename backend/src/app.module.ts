@@ -10,10 +10,12 @@ import { ReturnsModule } from './returns/returns.module';
 import { AssetHistoryModule } from './asset-history/asset-history.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module.js';
+import { AuthModule } from './auth/auth.module.js';
 
 @Module({
   imports: [
     PrismaModule,
+    AuthModule,
     EmployeeModule,
     AssetModule,
     CategoriesModule,
