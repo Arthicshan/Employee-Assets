@@ -6,13 +6,59 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 export class AssetService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.asset.findMany({
-      include: {
-        employee: true,
-      },
-    });
-  }
+  async findAll(filters: {
+  status?: string;
+  category?: string;
+  search?: string;
+} = {}) {
+  const { status, category, search } = filters;
+
+  return this.prisma.asset.findMany({
+    where: {
+      ...(status && {
+        status: status,
+      }),
+
+      ...(category && {
+        category: {
+          contains: category,
+          mode: 'insensitive',
+        },
+      }),
+
+      ...(search && {
+        OR: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            assetTag: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            brand: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      }),
+    },
+
+    include: {
+      employee: true,
+    },
+
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+}
 
   async findOne(id: number) {
     const asset = await this.prisma.asset.findUnique({

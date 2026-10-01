@@ -79,3 +79,15 @@ model AssetHistory {
   asset      Asset     @relation(fields: [assetId], references: [id])
   employee   Employee? @relation(fields: [employeeId], references: [id])
 }
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("EMPLOYEE")
+  firstName    String
+  lastName     String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

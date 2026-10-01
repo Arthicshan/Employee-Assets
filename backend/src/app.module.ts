@@ -8,6 +8,8 @@ import { CategoriesModule } from './categories/categories.module';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { ReturnsModule } from './returns/returns.module';
 import { AssetHistoryModule } from './asset-history/asset-history.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { HealthModule } from './health/health.module.js';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { AssetHistoryModule } from './asset-history/asset-history.module';
     AssignmentsModule,
     ReturnsModule,
     AssetHistoryModule,
+    DashboardModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
