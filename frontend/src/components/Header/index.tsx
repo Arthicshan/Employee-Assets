@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -98,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {currentUser?.role || 'EMPLOYEE'}
               </Badge>
             </div>
-            <p className="text-[11px] text-slate-500 leading-none truncate max-w-[140px] md:max-w-[180px]">
+            <p className="text-[11px] text-slate-500 leading-none truncate max-w-35 md:max-w-45">
               {currentUser?.email || 'user@assetflow.com'}
             </p>
           </div>
