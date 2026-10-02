@@ -234,7 +234,7 @@ export const AssignmentsPageContainer: React.FC = () => {
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-700">Assignment Notes (Optional)</label>
             <textarea
-              className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 min-h-[80px]"
+              className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 min-h-20"
               placeholder="e.g. Issued for Q4 engineering project, desk workstation setup"
               value={assignForm.notes || ''}
               onChange={(e) => setAssignForm({ ...assignForm, notes: e.target.value })}
@@ -316,7 +316,7 @@ export const AssignmentsPageContainer: React.FC = () => {
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-700">Return Remarks / Condition Notes</label>
             <textarea
-              className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 min-h-[80px]"
+              className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 min-h-20"
               placeholder="e.g. Returned in good working condition, charger cable included"
               value={returnForm.notes || ''}
               onChange={(e) => setReturnForm({ ...returnForm, notes: e.target.value })}
