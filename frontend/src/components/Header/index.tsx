@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -8,12 +8,9 @@ import {
   ChevronRight,
   Home,
   User,
-  Shield,
   LogOut,
-  Bell,
 } from 'lucide-react';
 import { Badge } from '@/components/Badge';
-import { sessionManager } from '@/libs/api/session-storage';
 import { UserProfile } from '@/types';
 
 interface HeaderProps {
@@ -30,7 +27,6 @@ export const Header: React.FC<HeaderProps> = ({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Compute readable page title from current route
   const getPageTitle = () => {
     if (pathname.startsWith('/dashboard')) return 'Dashboard Overview';
     if (pathname.startsWith('/assets')) return 'Asset Inventory';
@@ -71,15 +67,15 @@ export const Header: React.FC<HeaderProps> = ({
         <Link
           href="/dashboard"
           title="Go to Home / Dashboard"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 bg-white shadow-2xs text-xs font-medium transition-all active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 bg-white shadow-2xs text-xs font-semibold transition-all active:scale-95 cursor-pointer"
         >
           <Home className="w-4 h-4 text-indigo-600" />
-          <span className="hidden sm:inline">Home</span>
+          <span>Home</span>
         </Link>
 
         {/* Current Page Title / Breadcrumb */}
         <div className="hidden lg:flex items-center gap-2 ml-2 pl-3 border-l border-slate-200 text-xs text-slate-500">
-          <span className="font-medium text-slate-800">{getPageTitle()}</span>
+          <span className="font-semibold text-slate-800">{getPageTitle()}</span>
         </div>
       </div>
 
@@ -98,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-xs font-bold text-slate-800 leading-tight">
                 {currentUser?.firstName || 'User'} {currentUser?.lastName || ''}
               </span>
-              <Badge variant="purple" size="sm" className="px-1.5 py-0 text-[10px]">
+              <Badge variant="purple" size="sm">
                 {currentUser?.role || 'EMPLOYEE'}
               </Badge>
             </div>
@@ -122,4 +118,3 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
-
