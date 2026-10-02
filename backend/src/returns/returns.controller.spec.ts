@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReturnsController } from './returns.controller';
+import { ReturnsService } from './returns.service';
 
 describe('ReturnsController', () => {
   let controller: ReturnsController;
@@ -7,6 +8,14 @@ describe('ReturnsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReturnsController],
+      providers: [
+        {
+          provide: ReturnsService,
+          useValue: {
+            create: jest.fn().mockResolvedValue({}),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<ReturnsController>(ReturnsController);
@@ -16,3 +25,4 @@ describe('ReturnsController', () => {
     expect(controller).toBeDefined();
   });
 });
+

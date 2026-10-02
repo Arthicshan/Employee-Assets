@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesController } from './categories.controller';
+import { CategoriesService } from './categories.service';
 
 describe('CategoriesController', () => {
   let controller: CategoriesController;
@@ -7,6 +8,16 @@ describe('CategoriesController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CategoriesController],
+      providers: [
+        {
+          provide: CategoriesService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
+            findOne: jest.fn(),
+            create: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<CategoriesController>(CategoriesController);
@@ -16,3 +27,4 @@ describe('CategoriesController', () => {
     expect(controller).toBeDefined();
   });
 });
+
