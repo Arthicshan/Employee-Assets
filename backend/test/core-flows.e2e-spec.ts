@@ -1,12 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { createTestApp, getAuthToken } from './setup-test-app';
+import { createTestApp } from './setup-test-app';
 import { PrismaService } from '../src/prisma/prisma.service';
 
 describe('Core Business Flows (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
-  let adminToken: string;
 
   const testSuffix = Date.now().toString().slice(-6);
   const activeEmployeeNo = `EMP-E2E-ACT-${testSuffix}`;
@@ -23,9 +22,7 @@ describe('Core Business Flows (e2e)', () => {
   beforeAll(async () => {
     app = await createTestApp();
     prisma = app.get<PrismaService>(PrismaService);
-    adminToken = await getAuthToken(app);
   });
-
 
   afterAll(async () => {
     // Clean up test data in reverse dependency order
@@ -69,7 +66,6 @@ describe('Core Business Flows (e2e)', () => {
   it('Flow 2: POST /assets creates a new available asset', async () => {
     const res1 = await request(app.getHttpServer())
       .post('/assets')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assetTag: assetTag1,
         name: 'Dell Latitude E2E Test 1',
@@ -89,7 +85,6 @@ describe('Core Business Flows (e2e)', () => {
     // Create a second asset for inactive employee test
     const res2 = await request(app.getHttpServer())
       .post('/assets')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assetTag: assetTag2,
         name: 'Dell Latitude E2E Test 2',
@@ -109,7 +104,6 @@ describe('Core Business Flows (e2e)', () => {
     // 3a. Active employee
     const activeRes = await request(app.getHttpServer())
       .post('/employees')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         employeeNo: activeEmployeeNo,
         firstName: 'Active',
@@ -128,7 +122,6 @@ describe('Core Business Flows (e2e)', () => {
     // 3b. Inactive employee
     const inactiveRes = await request(app.getHttpServer())
       .post('/employees')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         employeeNo: inactiveEmployeeNo,
         firstName: 'Inactive',
@@ -149,7 +142,6 @@ describe('Core Business Flows (e2e)', () => {
   it('Flow 4: POST /assignments successfully assigns available asset to active employee', async () => {
     const res = await request(app.getHttpServer())
       .post('/assignments')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assetId: createdAsset1Id,
         employeeId: createdActiveEmployeeId,
@@ -166,7 +158,6 @@ describe('Core Business Flows (e2e)', () => {
     // Verify asset status transitioned to 'assigned'
     const assetCheck = await request(app.getHttpServer())
       .get(`/assets/${createdAsset1Id}`)
-      .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
     expect(assetCheck.body.status.toLowerCase()).toBe('assigned');
@@ -176,7 +167,6 @@ describe('Core Business Flows (e2e)', () => {
   it('Flow 5: POST /assignments rejects assignment to an inactive employee with 400 Bad Request', async () => {
     const res = await request(app.getHttpServer())
       .post('/assignments')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assetId: createdAsset2Id,
         employeeId: createdInactiveEmployeeId,
@@ -193,7 +183,6 @@ describe('Core Business Flows (e2e)', () => {
     // createdAsset1Id is already 'assigned' from Flow 4
     const res = await request(app.getHttpServer())
       .post('/assignments')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assetId: createdAsset1Id,
         employeeId: createdActiveEmployeeId,
@@ -209,7 +198,6 @@ describe('Core Business Flows (e2e)', () => {
   it('Flow 7: POST /returns successfully returns an assigned asset and sets status back to available', async () => {
     const res = await request(app.getHttpServer())
       .post('/returns')
-      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assignmentId: createdAssignmentId,
         condition: 'GOOD',
@@ -224,7 +212,6 @@ describe('Core Business Flows (e2e)', () => {
     // Verify asset status reverted to 'available'
     const assetCheck = await request(app.getHttpServer())
       .get(`/assets/${createdAsset1Id}`)
-      .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
     expect(assetCheck.body.status.toLowerCase()).toBe('available');
@@ -235,7 +222,6 @@ describe('Core Business Flows (e2e)', () => {
     // 8a. Global asset history
     const allHistoryRes = await request(app.getHttpServer())
       .get('/asset-history')
-      .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
     expect(Array.isArray(allHistoryRes.body)).toBe(true);
@@ -244,7 +230,6 @@ describe('Core Business Flows (e2e)', () => {
     // 8b. Specific asset history for createdAsset1Id
     const assetHistoryRes = await request(app.getHttpServer())
       .get(`/asset-history/asset/${createdAsset1Id}`)
-      .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
     expect(Array.isArray(assetHistoryRes.body)).toBe(true);
@@ -252,5 +237,4 @@ describe('Core Business Flows (e2e)', () => {
     expect(actions).toContain('ASSIGNED');
     expect(actions).toContain('RETURNED');
   });
-
 });

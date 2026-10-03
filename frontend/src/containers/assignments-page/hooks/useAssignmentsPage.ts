@@ -62,12 +62,11 @@ export function useAssignmentsPage() {
         employeesService.getEmployees(),
       ]);
       setAvailableAssets(assetsData);
-      setEmployees((empsData || []).filter((e) => e.isActive !== false));
+      setEmployees(empsData);
     } catch {
       // Ignore background load failures
     }
   }, []);
-
 
   useEffect(() => {
     fetchAssignments();

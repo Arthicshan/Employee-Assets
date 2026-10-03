@@ -1,42 +1,37 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { createTestApp, getAuthToken } from './setup-test-app';
+import { createTestApp } from './setup-test-app';
 
 describe('Assets (e2e)', () => {
   let app: INestApplication;
-  let adminToken: string;
 
   beforeAll(async () => {
     app = await createTestApp();
-    adminToken = await getAuthToken(app);
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  it('/assets (GET) - lists assets', async () => {
+  it('/assets (GET) - lists assets with pagination metadata', async () => {
     const res = await request(app.getHttpServer())
-      .get('/assets')
-      .set('Authorization', `Bearer ${adminToken}`)
+      .get('/assets?page=1&limit=10')
       .expect(200);
 
-    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body).toHaveProperty('data');
+    expect(res.body).toHaveProperty('meta');
+    expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it('/assets (GET) - filters assets by status', async () => {
     const res = await request(app.getHttpServer())
       .get('/assets?status=available')
-      .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
-    const assets = Array.isArray(res.body) ? res.body : res.body.data;
-    expect(Array.isArray(assets)).toBe(true);
-    if (assets.length > 0) {
-      expect(assets[0].status.toLowerCase()).toBe('available');
+    expect(res.body).toHaveProperty('data');
+    if (res.body.data.length > 0) {
+      expect(res.body.data[0].status.toLowerCase()).toBe('available');
     }
   });
-
 });
-
 

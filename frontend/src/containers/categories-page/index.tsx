@@ -10,12 +10,9 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Badge } from '@/components/Badge';
 import { Layers, Plus, Pencil, Trash2, AlertCircle } from 'lucide-react';
 import { AssetCategory } from '@/types';
-import { sessionManager } from '@/libs/api/session-storage';
 
 export const CategoriesPageContainer: React.FC = () => {
-  const isAdmin = sessionManager.getUser()?.role === 'ADMIN';
   const {
-
     categories,
     isLoading,
     error,
@@ -70,32 +67,28 @@ export const CategoriesPageContainer: React.FC = () => {
       header: 'Created Date',
       accessor: (row) => new Date(row.createdAt).toLocaleDateString(),
     },
-    ...(isAdmin
-      ? [
-          {
-            header: 'Actions',
-            className: 'text-right',
-            accessor: (row: AssetCategory) => (
-              <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => openEditModal(row)}
-                  className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
-                  title="Edit Category"
-                >
-                  <Pencil className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setDeletingCategory(row)}
-                  className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                  title="Delete Category"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ),
-          },
-        ]
-      : []),
+    {
+      header: 'Actions',
+      className: 'text-right',
+      accessor: (row) => (
+        <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => openEditModal(row)}
+            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors cursor-pointer"
+            title="Edit Category"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setDeletingCategory(row)}
+            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+            title="Delete Category"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
+      ),
+    },
   ];
 
   return (
@@ -104,21 +97,18 @@ export const CategoriesPageContainer: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Layers className="w-6 h-6 text-blue-600" />
+            <Layers className="w-6 h-6 text-indigo-600" />
             Asset Categories
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Organize and classify equipment into standard groups (Laptops, Monitors, Phones, etc.)
           </p>
         </div>
-        {isAdmin && (
-          <Button variant="primary" onClick={openCreateModal}>
-            <Plus className="w-4 h-4 mr-1.5" />
-            Add Category
-          </Button>
-        )}
+        <Button variant="primary" onClick={openCreateModal}>
+          <Plus className="w-4 h-4 mr-1.5" />
+          Add Category
+        </Button>
       </div>
-
 
       {error && (
         <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-2.5">

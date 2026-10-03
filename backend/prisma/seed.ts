@@ -76,17 +76,16 @@ async function main() {
 
   // 3. Create Employees across various departments
   const employeesData = [
-    { employeeNo: 'EMP-000', firstName: 'John', lastName: 'Doe', email: 'employee@assetflow.com', department: 'Engineering', position: 'Software Engineer', isActive: true },
-    { employeeNo: 'EMP-001', firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@company.com', department: 'Engineering', position: 'Lead Software Architect', isActive: true },
-    { employeeNo: 'EMP-002', firstName: 'Bob', lastName: 'Smith', email: 'bob.smith@company.com', department: 'Product Design', position: 'Senior UX Designer', isActive: true },
-    { employeeNo: 'EMP-003', firstName: 'Carol', lastName: 'Williams', email: 'carol.williams@company.com', department: 'Marketing', position: 'VP of Marketing', isActive: true },
-    { employeeNo: 'EMP-004', firstName: 'David', lastName: 'Brown', email: 'david.brown@company.com', department: 'Engineering', position: 'DevOps / SRE Lead', isActive: true },
-    { employeeNo: 'EMP-005', firstName: 'Eve', lastName: 'Davis', email: 'eve.davis@company.com', department: 'Human Resources', position: 'People Operations Manager', isActive: true },
-    { employeeNo: 'EMP-006', firstName: 'Frank', lastName: 'Miller', email: 'frank.miller@company.com', department: 'Finance', position: 'Senior Financial Analyst', isActive: true },
-    { employeeNo: 'EMP-007', firstName: 'Grace', lastName: 'Hopper', email: 'grace.hopper@company.com', department: 'Engineering', position: 'QA Automation Lead', isActive: true },
-    { employeeNo: 'EMP-008', firstName: 'Henry', lastName: 'Wilson', email: 'henry.wilson@company.com', department: 'Product', position: 'Senior Product Manager', isActive: true },
-    { employeeNo: 'EMP-009', firstName: 'Irene', lastName: 'Adler', email: 'irene.adler@company.com', department: 'IT Operations', position: 'IT Support Specialist', isActive: true },
-    { employeeNo: 'EMP-010', firstName: 'Jack', lastName: 'Robinson', email: 'jack.robinson@company.com', department: 'Sales', position: 'Enterprise Account Executive', isActive: true },
+    { employeeNo: 'EMP-001', firstName: 'Alice', lastName: 'Johnson', email: 'alice.johnson@company.com', department: 'Engineering', position: 'Lead Software Architect' },
+    { employeeNo: 'EMP-002', firstName: 'Bob', lastName: 'Smith', email: 'bob.smith@company.com', department: 'Product Design', position: 'Senior UX Designer' },
+    { employeeNo: 'EMP-003', firstName: 'Carol', lastName: 'Williams', email: 'carol.williams@company.com', department: 'Marketing', position: 'VP of Marketing' },
+    { employeeNo: 'EMP-004', firstName: 'David', lastName: 'Brown', email: 'david.brown@company.com', department: 'Engineering', position: 'DevOps / SRE Lead' },
+    { employeeNo: 'EMP-005', firstName: 'Eve', lastName: 'Davis', email: 'eve.davis@company.com', department: 'Human Resources', position: 'People Operations Manager' },
+    { employeeNo: 'EMP-006', firstName: 'Frank', lastName: 'Miller', email: 'frank.miller@company.com', department: 'Finance', position: 'Senior Financial Analyst' },
+    { employeeNo: 'EMP-007', firstName: 'Grace', lastName: 'Hopper', email: 'grace.hopper@company.com', department: 'Engineering', position: 'QA Automation Lead' },
+    { employeeNo: 'EMP-008', firstName: 'Henry', lastName: 'Wilson', email: 'henry.wilson@company.com', department: 'Product', position: 'Senior Product Manager' },
+    { employeeNo: 'EMP-009', firstName: 'Irene', lastName: 'Adler', email: 'irene.adler@company.com', department: 'IT Operations', position: 'IT Support Specialist' },
+    { employeeNo: 'EMP-010', firstName: 'Jack', lastName: 'Robinson', email: 'jack.robinson@company.com', department: 'Sales', position: 'Enterprise Account Executive' },
   ];
 
   const createdEmployees: Record<string, any> = {};
@@ -98,30 +97,9 @@ async function main() {
   }
   console.log(`Created ${employeesData.length} employees.`);
 
-  // Link employee demo user to John Doe Employee record
-  const johnDoe = createdEmployees['EMP-000'];
-  if (johnDoe) {
-    await prisma.user.update({
-      where: { email: 'employee@assetflow.com' },
-      data: { employeeId: johnDoe.id },
-    });
-  }
-
   // 4. Create Assets with various states (assigned, damaged, available, under_repair, retired)
   const assetsData = [
     // Assigned Assets (Status: 'assigned')
-    {
-      assetTag: 'LAP-000',
-      name: 'MacBook Pro 14" M3 Pro',
-      category: 'Laptops',
-      brand: 'Apple',
-      model: 'MacBook Pro 2024 (18GB RAM / 512GB SSD)',
-      serialNumber: 'SN-LAP-000',
-      status: 'assigned',
-      purchaseDate: new Date('2024-02-01'),
-      assignedTo: 'EMP-000',
-      assignmentNotes: 'Standard engineering workstation assigned to John Doe.',
-    },
     {
       assetTag: 'LAP-001',
       name: 'MacBook Pro 16" M3 Max',
