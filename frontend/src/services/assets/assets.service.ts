@@ -23,7 +23,7 @@ export const assetsService = {
   },
 
   async getAssetHistory(id: number): Promise<AssetHistory[]> {
-    return apiClient.get<AssetHistory[]>(`/asset-history/asset/${id}`);
+    return apiClient.get<AssetHistory[]>(`/assets/${id}/history`);
   },
 
   async assignToEmployee(assetId: number, employeeId: number): Promise<Asset> {

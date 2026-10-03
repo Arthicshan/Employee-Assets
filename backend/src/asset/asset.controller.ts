@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssetService } from './asset.service';
-import { AssetHistoryService } from '../asset-history/asset-history.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -25,10 +24,7 @@ import { Role } from '../common/constants/roles.constant';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('assets')
 export class AssetController {
-  constructor(
-    private readonly assetService: AssetService,
-    private readonly assetHistoryService: AssetHistoryService,
-  ) {}
+  constructor(private readonly assetService: AssetService) {}
 
   @Get()
   @Roles(Role.ADMIN, Role.MANAGER)
@@ -103,13 +99,5 @@ export class AssetController {
   @ApiOperation({ summary: 'Unassign asset from employee (Admin & Manager)' })
   unassignFromEmployee(@Param('id') id: string) {
     return this.assetService.unassignFromEmployee(Number(id));
-  }
-
-  @Get(':id/history')
-  @Roles(Role.ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: 'Get lifecycle history for an asset (Admin & Manager)' })
-  @ApiResponse({ status: 200, description: 'Asset lifecycle events returned' })
-  getAssetHistory(@Param('id') id: string) {
-    return this.assetHistoryService.findByAsset(Number(id));
   }
 }

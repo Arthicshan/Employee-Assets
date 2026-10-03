@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 
 @Injectable()
 export class AssetService {
@@ -93,22 +92,22 @@ export class AssetService {
     });
   }
 
-  async update(id: number, data: UpdateAssetDto) {
+  async update(id: number, data: CreateAssetDto) {
     await this.findOne(id);
 
     return this.prisma.asset.update({
       where: { id },
       data: {
-        ...(data.assetTag && { assetTag: data.assetTag }),
-        ...(data.name && { name: data.name }),
-        ...(data.category && { category: data.category }),
-        ...(data.brand !== undefined && { brand: data.brand }),
-        ...(data.model !== undefined && { model: data.model }),
-        ...(data.serialNumber !== undefined && { serialNumber: data.serialNumber }),
-        ...(data.status && { status: data.status }),
-        ...(data.purchaseDate !== undefined && {
-          purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null,
-        }),
+        assetTag: data.assetTag,
+        name: data.name,
+        category: data.category,
+        brand: data.brand,
+        model: data.model,
+        serialNumber: data.serialNumber,
+        status: data.status,
+        purchaseDate: data.purchaseDate
+          ? new Date(data.purchaseDate)
+          : undefined,
       },
     });
   }
