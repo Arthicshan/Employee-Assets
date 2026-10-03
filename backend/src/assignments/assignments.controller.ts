@@ -1,9 +1,15 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssignmentsService } from './assignments.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/constants/roles.constant';
 
 @ApiTags('Assignments')
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('assignments')
 export class AssignmentsController {
   constructor(
@@ -11,13 +17,9 @@ export class AssignmentsController {
   ) {}
 
   @Get()
-  @ApiOperation({ summary: 'List equipment assignments with pagination and status filters' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by status (ACTIVE, RETURNED, ALL)' })
-  @ApiQuery({ name: 'assetId', required: false, description: 'Filter by asset ID' })
-  @ApiQuery({ name: 'employeeId', required: false, description: 'Filter by employee ID' })
-  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 50)' })
-  @ApiResponse({ status: 200, description: 'Assignments list retrieved successfully' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'List asset assignments (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Assignments retrieved successfully' })
   findAll(
     @Query('status') status?: string,
     @Query('assetId') assetId?: string,
@@ -35,18 +37,19 @@ export class AssignmentsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get assignment record details by ID' })
-  @ApiResponse({ status: 200, description: 'Assignment details retrieved successfully' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Get assignment details by ID (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Assignment details returned' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.assignmentsService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.assignmentsService.findOne(Number(id));
   }
 
   @Post()
-  @ApiOperation({ summary: 'Assign an AVAILABLE asset to an ACTIVE employee' })
-  @ApiResponse({ status: 201, description: 'Asset successfully assigned within a transaction' })
-  @ApiResponse({ status: 400, description: 'Business rule violation (asset not available, employee inactive, or already assigned)' })
-  @ApiResponse({ status: 404, description: 'Asset or employee not found' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Assign an available asset to an active employee (Admin & Manager)' })
+  @ApiResponse({ status: 201, description: 'Asset assigned successfully' })
+  @ApiResponse({ status: 400, description: 'Asset unavailable or employee inactive' })
   create(@Body() data: CreateAssignmentDto) {
     return this.assignmentsService.create(data);
   }

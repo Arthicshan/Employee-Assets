@@ -6,10 +6,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
+  rightElement?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, className = '', id, ...props }, ref) => {
+  ({ label, error, helperText, rightElement, className = '', id, ...props }, ref) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
 
     return (
@@ -20,22 +21,32 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {props.required && <span className="text-rose-500 ml-0.5">*</span>}
           </label>
         )}
-        <input
-          id={inputId}
-          ref={ref}
-          className={`w-full px-3.5 py-2 text-sm rounded-lg border bg-white text-slate-900 placeholder-slate-400 transition-colors focus:outline-none focus:ring-2 ${
-            error
-              ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
-              : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-100'
-          } ${className}`}
-          {...props}
-        />
+        <div className="relative w-full">
+          <input
+            id={inputId}
+            ref={ref}
+            className={`w-full px-3.5 py-2 text-sm rounded-lg border bg-white text-slate-900 placeholder-slate-400 transition-colors focus:outline-none focus:ring-2 ${
+              rightElement ? 'pr-10' : ''
+            } ${
+              error
+                ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
+                : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
+            } ${className}`}
+            {...props}
+          />
+          {rightElement && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-slate-400 hover:text-slate-600">
+              {rightElement}
+            </div>
+          )}
+        </div>
         {error && <span className="text-xs text-rose-600 font-medium">{error}</span>}
         {helperText && !error && <span className="text-xs text-slate-500">{helperText}</span>}
       </div>
     );
   }
 );
+
 
 Input.displayName = 'Input';
 

@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { HealthService } from './health.service';
 import { Public } from '../common/decorators/public.decorator';
 
@@ -10,8 +10,8 @@ export class HealthController {
 
   @Public()
   @Get()
-  @ApiOperation({ summary: 'System and database health check' })
-  @ApiResponse({ status: 200, description: 'Service is healthy and database is connected' })
+  @ApiOperation({ summary: 'Check API and database health connectivity' })
+  @ApiResponse({ status: 200, description: 'Health check completed successfully' })
   async check() {
     return this.healthService.check();
   }

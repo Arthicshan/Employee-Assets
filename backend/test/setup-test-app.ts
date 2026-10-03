@@ -24,3 +24,17 @@ export async function createTestApp(): Promise<INestApplication> {
   return app;
 }
 
+export async function getAuthToken(
+  app: INestApplication,
+  email = 'admin@assetflow.com',
+  password = 'admin123',
+): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const req = require('supertest');
+  const res = await req(app.getHttpServer())
+    .post('/auth/login')
+    .send({ email, password });
+  return res.body?.accessToken || res.body?.token;
+}
+
+

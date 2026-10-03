@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -50,13 +50,32 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     router.push('/login');
   };
 
-  const navItems = [
-    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { label: 'Assets', href: '/assets', icon: Boxes },
-    { label: 'Categories', href: '/categories', icon: Layers },
-    { label: 'Employees', href: '/employees', icon: Users },
-    { label: 'Assignments', href: '/assignments', icon: ClipboardList },
-  ];
+  const getNavItems = () => {
+    if (currentUser?.role === 'EMPLOYEE') {
+      return [
+        { label: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'My Assigned Assets', href: '/dashboard#my-assets', icon: Boxes },
+        { label: 'My History', href: '/dashboard#my-history', icon: ClipboardList },
+      ];
+    }
+    if (currentUser?.role === 'MANAGER') {
+      return [
+        { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { label: 'Assets', href: '/assets', icon: Boxes },
+        { label: 'Employees', href: '/employees', icon: Users },
+        { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+      ];
+    }
+    return [
+      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'Assets', href: '/assets', icon: Boxes },
+      { label: 'Categories', href: '/categories', icon: Layers },
+      { label: 'Employees', href: '/employees', icon: Users },
+      { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+    ];
+  };
+
+  const navItems = getNavItems();
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -68,7 +87,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         {/* Mobile Brand Top Bar */}
         <div className="md:hidden h-14 bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-xs">
+            <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-xs">
               AF
             </div>
             <span className="font-bold text-sm">AssetFlow</span>
@@ -94,7 +113,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium ${
-                    isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+                    isActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -102,6 +121,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
                 </Link>
               );
             })}
+
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-3 py-2 text-rose-400 hover:bg-slate-800 rounded-lg text-sm font-medium cursor-pointer"

@@ -1,59 +1,74 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
+  IsNotEmpty,
   IsOptional,
   IsDateString,
   IsIn,
+  MinLength,
+  MaxLength,
+  Matches,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdateAssetDto {
-  @ApiPropertyOptional({ example: 'LAP-0012', description: 'Unique asset inventory tag' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Asset tag must be a string' })
+  @IsNotEmpty({ message: 'Asset tag cannot be empty' })
+  @MinLength(3, { message: 'Asset tag must be at least 3 characters (e.g. MOB-001)' })
+  @MaxLength(30, { message: 'Asset tag cannot exceed 30 characters' })
+  @Matches(/^[A-Za-z0-9\-_]+$/, {
+    message: 'Asset tag must contain only alphanumeric characters, hyphens, and underscores without spaces (e.g. MOB-001)',
+  })
   assetTag?: string;
 
-  @ApiPropertyOptional({ example: 'Dell Latitude 5450', description: 'Equipment name/title' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Asset name must be a string' })
+  @IsNotEmpty({ message: 'Asset name cannot be empty' })
+  @MinLength(3, { message: 'Asset name must be at least 3 characters long' })
+  @MaxLength(100, { message: 'Asset name cannot exceed 100 characters' })
   name?: string;
 
-  @ApiPropertyOptional({ example: 'Laptops', description: 'Asset category name' })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'Category is required' })
+  @IsNotEmpty({ message: 'Category cannot be empty' })
   category?: string;
 
-  @ApiPropertyOptional({ example: 'Dell', description: 'Brand or manufacturer' })
   @IsOptional()
+  @ValidateIf((e) => e.brand !== '' && e.brand != null)
   @IsString()
+  @MaxLength(50, { message: 'Brand cannot exceed 50 characters' })
   brand?: string;
 
-  @ApiPropertyOptional({ example: 'Latitude 5450', description: 'Hardware model' })
   @IsOptional()
+  @ValidateIf((e) => e.model !== '' && e.model != null)
   @IsString()
+  @MaxLength(50, { message: 'Model cannot exceed 50 characters' })
   model?: string;
 
-  @ApiPropertyOptional({ example: 'SN-5450-9988', description: 'Manufacturer serial number' })
   @IsOptional()
+  @ValidateIf((e) => e.serialNumber !== '' && e.serialNumber != null)
   @IsString()
+  @MaxLength(50, { message: 'Serial number cannot exceed 50 characters' })
   serialNumber?: string;
 
-  @ApiPropertyOptional({
-    enum: ['available', 'assigned', 'damaged', 'under_repair', 'lost', 'retired'],
-    description: 'Current lifecycle status of the asset',
-  })
   @IsOptional()
-  @IsIn([
-    'available',
-    'assigned',
-    'damaged',
-    'under_repair',
-    'lost',
-    'retired',
-  ])
+  @IsIn(
+    ['available', 'assigned', 'damaged', 'under_repair', 'lost', 'retired'],
+    {
+      message:
+        'Status must be one of: available, assigned, damaged, under_repair, lost, retired',
+    },
+  )
   status?: string;
 
-  @ApiPropertyOptional({ example: '2024-01-15', description: 'Purchase date in YYYY-MM-DD format' })
   @IsOptional()
-  @IsDateString()
+  @ValidateIf((e) => e.purchaseDate !== '' && e.purchaseDate != null)
+  @IsDateString(
+    {},
+    {
+      message:
+        'Purchase date must be a valid date in format YYYY-MM-DD',
+    },
+  )
   purchaseDate?: string;
 }

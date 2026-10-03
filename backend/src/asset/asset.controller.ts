@@ -4,27 +4,31 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/constants/roles.constant';
 
 @ApiTags('Assets')
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('assets')
 export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all assets with optional filtering' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by asset status' })
-  @ApiQuery({ name: 'category', required: false, description: 'Filter by category name' })
-  @ApiQuery({ name: 'search', required: false, description: 'Search across tags, names, models, brands, serial numbers' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'List all assets with optional filtering (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Assets retrieved successfully' })
   findAll(
     @Query('status') status?: string,
@@ -39,55 +43,61 @@ export class AssetController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get asset details and custody history by ID' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Get asset details by ID (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Asset details returned' })
   @ApiResponse({ status: 404, description: 'Asset not found' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.assetService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.assetService.findOne(Number(id));
   }
 
   @Post()
-  @ApiOperation({ summary: 'Register a new hardware asset' })
-  @ApiResponse({ status: 201, description: 'Asset registered successfully' })
-  @ApiResponse({ status: 400, description: 'Validation error or duplicate asset tag / serial number' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Register a new asset (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Asset created successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   create(@Body() data: CreateAssetDto) {
     return this.assetService.create(data);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update an existing asset details' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update asset specifications (Admin only)' })
   @ApiResponse({ status: 200, description: 'Asset updated successfully' })
-  @ApiResponse({ status: 404, description: 'Asset not found' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() data: UpdateAssetDto,
   ) {
-    return this.assetService.update(id, data);
+    return this.assetService.update(Number(id), data);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete an asset' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete an asset (Admin only)' })
   @ApiResponse({ status: 200, description: 'Asset deleted successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot delete currently assigned asset' })
-  @ApiResponse({ status: 404, description: 'Asset not found' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.assetService.remove(id);
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
+  remove(@Param('id') id: string) {
+    return this.assetService.remove(Number(id));
   }
 
   @Patch(':id/assign/:employeeId')
-  @ApiOperation({ summary: 'Assign asset directly to an employee' })
-  @ApiResponse({ status: 200, description: 'Asset assigned successfully' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Assign asset directly to an employee (Admin & Manager)' })
   assignToEmployee(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('employeeId', ParseIntPipe) employeeId: number,
+    @Param('id') id: string,
+    @Param('employeeId') employeeId: string,
   ) {
-    return this.assetService.assignToEmployee(id, employeeId);
+    return this.assetService.assignToEmployee(
+      Number(id),
+      Number(employeeId),
+    );
   }
 
   @Patch(':id/unassign')
-  @ApiOperation({ summary: 'Unassign asset from employee' })
-  @ApiResponse({ status: 200, description: 'Asset unassigned successfully' })
-  unassign(@Param('id', ParseIntPipe) id: number) {
-    return this.assetService.unassignFromEmployee(id);
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Unassign asset from employee (Admin & Manager)' })
+  unassignFromEmployee(@Param('id') id: string) {
+    return this.assetService.unassignFromEmployee(Number(id));
   }
 }

@@ -4,57 +4,80 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Role } from '../common/constants/roles.constant';
 
 @ApiTags('Categories')
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List all asset categories with asset counts' })
-  @ApiResponse({ status: 200, description: 'List of all categories retrieved successfully' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'List all asset categories (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Categories retrieved successfully' })
   findAll() {
     return this.categoriesService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get category details by ID' })
-  @ApiResponse({ status: 200, description: 'Category details retrieved successfully' })
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Get category details by ID (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Category details returned' })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.categoriesService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.categoriesService.findOne(Number(id));
   }
 
   @Post()
-  @ApiOperation({ summary: 'Create a new asset category' })
-  @ApiResponse({ status: 201, description: 'Category successfully created' })
-  @ApiResponse({ status: 400, description: 'Validation failed or duplicate category name' })
-  create(@Body() data: CreateCategoryDto) {
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Create a new asset category (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Category created successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
+  create(
+    @Body()
+    data: {
+      name: string;
+      description?: string;
+      active?: boolean;
+    },
+  ) {
     return this.categoriesService.create(data);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update an existing category' })
-  @ApiResponse({ status: 200, description: 'Category successfully updated' })
-  @ApiResponse({ status: 404, description: 'Category not found' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateCategoryDto) {
-    return this.categoriesService.update(id, data);
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update an asset category (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Category updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
+  update(
+    @Param('id') id: string,
+    @Body()
+    data: {
+      name?: string;
+      description?: string;
+      active?: boolean;
+    },
+  ) {
+    return this.categoriesService.update(Number(id), data);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a category (only if no assets are linked)' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete an asset category (Admin only)' })
   @ApiResponse({ status: 200, description: 'Category deleted successfully' })
-  @ApiResponse({ status: 400, description: 'Cannot delete category with associated assets' })
-  @ApiResponse({ status: 404, description: 'Category not found' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.categoriesService.remove(id);
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
+  remove(@Param('id') id: string) {
+    return this.categoriesService.remove(Number(id));
   }
 }

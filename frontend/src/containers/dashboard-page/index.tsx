@@ -17,12 +17,21 @@ import {
   RotateCw,
   Activity,
 } from 'lucide-react';
+import { sessionManager } from '@/libs/api/session-storage';
+import { EmployeeDashboardView } from './components/EmployeeDashboardView';
+
 
 export const DashboardPageContainer: React.FC = () => {
+  const user = sessionManager.getUser();
+  if (user?.role === 'EMPLOYEE') {
+    return <EmployeeDashboardView />;
+  }
+
   const { summary, isLoading, error, refresh } = useDashboardPage();
 
   return (
     <div className="space-y-8">
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

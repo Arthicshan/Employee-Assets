@@ -6,6 +6,7 @@ export interface Employee {
   email: string;
   department: string;
   position: string;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,6 +18,7 @@ export interface CreateEmployeeDto {
   email: string;
   department: string;
   position: string;
+  isActive?: boolean;
 }
 
 export interface UpdateEmployeeDto {
@@ -26,5 +28,6 @@ export interface UpdateEmployeeDto {
   email?: string;
   department?: string;
   position?: string;
+  isActive?: boolean;
 }
 

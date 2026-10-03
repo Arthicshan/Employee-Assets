@@ -5,4 +5,5 @@ export * from './employee.types';
 export * from './asset.types';
 export * from './assignment.types';
 export * from './dashboard.types';
+export * from './employee-portal.types';
 
