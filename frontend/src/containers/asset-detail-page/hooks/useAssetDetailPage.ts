@@ -17,7 +17,7 @@ export function useAssetDetailPage(id: number) {
     try {
       const [assetData, historyData] = await Promise.all([
         assetsService.getAssetById(id),
-        assetsService.getAssetHistory(id),
+        assetsService.getAssetHistory(id).catch(() => []),
       ]);
       setAsset(assetData);
       setHistory(historyData);

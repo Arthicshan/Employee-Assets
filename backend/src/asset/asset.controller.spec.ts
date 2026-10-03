@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AssetController } from './asset.controller';
 import { AssetService } from './asset.service';
+import { AssetHistoryService } from '../asset-history/asset-history.service';
 
 describe('AssetController', () => {
   let controller: AssetController;
@@ -17,6 +18,13 @@ describe('AssetController', () => {
             create: jest.fn(),
             update: jest.fn(),
             remove: jest.fn(),
+          },
+        },
+        {
+          provide: AssetHistoryService,
+          useValue: {
+            findAll: jest.fn().mockResolvedValue([]),
+            findByAsset: jest.fn().mockResolvedValue([]),
           },
         },
       ],
