@@ -5,10 +5,7 @@ import {
   IsOptional,
   IsDateString,
   IsIn,
-  IsNumber,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-
 
 export class CreateAssetDto {
   @ApiProperty({ example: 'LAP-0012', description: 'Unique asset inventory tag' })
@@ -61,15 +58,4 @@ export class CreateAssetDto {
   @IsOptional()
   @IsDateString()
   purchaseDate?: string;
-
-  @ApiPropertyOptional({ example: 1299.99, description: 'Purchase price of the asset' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  purchasePrice?: number;
-
-  @ApiPropertyOptional({ example: '2027-01-15', description: 'Warranty expiry date in YYYY-MM-DD format' })
-  @IsOptional()
-  @IsDateString()
-  warrantyExpiryDate?: string;
 }

@@ -14,10 +14,6 @@ describe('AuthService', () => {
     mockPrisma = {
       user: {
         findUnique: jest.fn(),
-        update: jest.fn(),
-      },
-      employee: {
-        findUnique: jest.fn(),
       },
     };
 
@@ -58,8 +54,6 @@ describe('AuthService', () => {
         firstName: 'System',
         lastName: 'Admin',
         isActive: true,
-        employeeId: null,
-        employee: null,
       });
 
       const result = await service.login({
@@ -74,13 +68,11 @@ describe('AuthService', () => {
         role: 'ADMIN',
         firstName: 'System',
         lastName: 'Admin',
-        employeeId: null,
       });
       expect(mockJwtService.sign).toHaveBeenCalledWith({
         sub: 1,
         email: 'admin@assetflow.com',
         role: 'ADMIN',
-        employeeId: undefined,
       });
     });
 
@@ -94,8 +86,6 @@ describe('AuthService', () => {
         firstName: 'Asset',
         lastName: 'Manager',
         isActive: true,
-        employeeId: null,
-        employee: null,
       });
 
       const result = await service.login({
@@ -105,36 +95,6 @@ describe('AuthService', () => {
 
       expect(result).toHaveProperty('accessToken', 'mock-jwt-token');
       expect(result.user.role).toBe('MANAGER');
-    });
-
-    it('should successfully authenticate an EMPLOYEE and return linked employeeId', async () => {
-      const hashedPassword = await bcrypt.hash('employee123', 10);
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 3,
-        email: 'employee@assetflow.com',
-        passwordHash: hashedPassword,
-        role: 'EMPLOYEE',
-        firstName: 'John',
-        lastName: 'Doe',
-        isActive: true,
-        employeeId: 42,
-        employee: { id: 42, employeeNo: 'EMP-000' },
-      });
-
-      const result = await service.login({
-        email: 'employee@assetflow.com',
-        password: 'employee123',
-      });
-
-      expect(result).toHaveProperty('accessToken', 'mock-jwt-token');
-      expect(result.user.role).toBe('EMPLOYEE');
-      expect(result.user.employeeId).toBe(42);
-      expect(mockJwtService.sign).toHaveBeenCalledWith({
-        sub: 3,
-        email: 'employee@assetflow.com',
-        role: 'EMPLOYEE',
-        employeeId: 42,
-      });
     });
 
     it('should reject login with wrong password', async () => {
@@ -182,7 +142,27 @@ describe('AuthService', () => {
         }),
       ).rejects.toThrow(new UnauthorizedException('Account is deactivated'));
     });
+
+    it('should reject login if user has EMPLOYEE role', async () => {
+      const hashedPassword = await bcrypt.hash('employee123', 10);
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 4,
+        email: 'employee@assetflow.com',
+        passwordHash: hashedPassword,
+        role: 'EMPLOYEE',
+        isActive: true,
+      });
+
+      await expect(
+        service.login({
+          email: 'employee@assetflow.com',
+          password: 'employee123',
+        }),
+      ).rejects.toThrow(
+        new UnauthorizedException(
+          'Access denied. Only Admin and Manager accounts are authorized to sign in.',
+        ),
+      );
+    });
   });
 });
-
-

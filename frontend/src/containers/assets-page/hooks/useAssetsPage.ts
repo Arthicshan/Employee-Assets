@@ -34,8 +34,6 @@ export function useAssetsPage() {
     serialNumber: '',
     status: 'available',
     purchaseDate: '',
-    purchasePrice: null,
-    warrantyExpiryDate: '',
   };
   const [formData, setFormData] = useState<CreateAssetDto>(initialForm);
 
@@ -82,8 +80,6 @@ export function useAssetsPage() {
       serialNumber: asset.serialNumber || '',
       status: asset.status,
       purchaseDate: asset.purchaseDate ? asset.purchaseDate.substring(0, 10) : '',
-      purchasePrice: asset.purchasePrice ?? null,
-      warrantyExpiryDate: asset.warrantyExpiryDate ? asset.warrantyExpiryDate.substring(0, 10) : '',
     });
     setError(null);
     setValidationErrors([]);
@@ -95,23 +91,15 @@ export function useAssetsPage() {
     setError(null);
     setValidationErrors([]);
 
-    const payload = {
-      ...formData,
-      purchasePrice: formData.purchasePrice ? Number(formData.purchasePrice) : null,
-      purchaseDate: formData.purchaseDate || undefined,
-      warrantyExpiryDate: formData.warrantyExpiryDate || undefined,
-    };
-
     try {
       if (editingAsset) {
-        await assetsService.updateAsset(editingAsset.id, payload);
+        await assetsService.updateAsset(editingAsset.id, formData);
         setEditingAsset(null);
       } else {
-        await assetsService.createAsset(payload);
+        await assetsService.createAsset(formData);
         setIsCreateOpen(false);
       }
       await fetchAssets();
-
     } catch (err: any) {
       if (err instanceof ApiError) {
         setError(err.message);

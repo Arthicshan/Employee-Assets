@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
-
 
 @Injectable()
 export class AssetService {
@@ -90,15 +88,11 @@ export class AssetService {
         purchaseDate: data.purchaseDate
           ? new Date(data.purchaseDate)
           : undefined,
-        purchasePrice: data.purchasePrice != null ? Number(data.purchasePrice) : undefined,
-        warrantyExpiryDate: data.warrantyExpiryDate
-          ? new Date(data.warrantyExpiryDate)
-          : undefined,
       },
     });
   }
 
-  async update(id: number, data: UpdateAssetDto) {
+  async update(id: number, data: CreateAssetDto) {
     await this.findOne(id);
 
     return this.prisma.asset.update({
@@ -111,19 +105,12 @@ export class AssetService {
         model: data.model,
         serialNumber: data.serialNumber,
         status: data.status,
-        purchaseDate: data.purchaseDate !== undefined
-          ? (data.purchaseDate ? new Date(data.purchaseDate) : null)
-          : undefined,
-        purchasePrice: data.purchasePrice !== undefined
-          ? (data.purchasePrice != null && (data.purchasePrice as any) !== '' ? Number(data.purchasePrice) : null)
-          : undefined,
-        warrantyExpiryDate: data.warrantyExpiryDate !== undefined
-          ? (data.warrantyExpiryDate ? new Date(data.warrantyExpiryDate) : null)
+        purchaseDate: data.purchaseDate
+          ? new Date(data.purchaseDate)
           : undefined,
       },
     });
   }
-
 
   async remove(id: number) {
     await this.findOne(id);

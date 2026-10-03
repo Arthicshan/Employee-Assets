@@ -16,10 +16,7 @@ import {
   AlertCircle,
   Clock,
   RotateCw,
-  DollarSign,
-  ShieldCheck,
 } from 'lucide-react';
-
 
 interface AssetDetailPageProps {
   id: number;
@@ -98,7 +95,7 @@ export const AssetDetailPageContainer: React.FC<AssetDetailPageProps> = ({ id })
         </div>
 
         {/* Specs Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 pt-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6">
           <div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
               <Tag className="w-3.5 h-3.5" /> Category
@@ -117,33 +114,10 @@ export const AssetDetailPageContainer: React.FC<AssetDetailPageProps> = ({ id })
 
           <div>
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              <DollarSign className="w-3.5 h-3.5 text-emerald-600" /> Purchase Price
-            </span>
-            <p className="text-sm font-bold text-slate-800 mt-1">
-              {asset.purchasePrice != null
-                ? `$${Number(asset.purchasePrice).toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}`
-                : 'N/A'}
-            </p>
-          </div>
-
-          <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" /> Purchase Date
             </span>
             <p className="text-sm font-medium text-slate-800 mt-1">
               {asset.purchaseDate ? new Date(asset.purchaseDate).toLocaleDateString() : 'N/A'}
-            </p>
-          </div>
-
-          <div>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" /> Warranty Expiry
-            </span>
-            <p className="text-sm font-medium text-slate-800 mt-1">
-              {asset.warrantyExpiryDate ? new Date(asset.warrantyExpiryDate).toLocaleDateString() : 'N/A'}
             </p>
           </div>
 
@@ -157,7 +131,6 @@ export const AssetDetailPageContainer: React.FC<AssetDetailPageProps> = ({ id })
           </div>
         </div>
       </div>
-
 
       {/* Grid: Current Assignment & History Timeline */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

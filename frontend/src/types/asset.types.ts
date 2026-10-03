@@ -25,8 +25,6 @@ export interface Asset {
   serialNumber?: string | null;
   status: string;
   purchaseDate?: string | null;
-  purchasePrice?: number | null;
-  warrantyExpiryDate?: string | null;
   createdAt: string;
   updatedAt: string;
   employeeId?: number | null;
@@ -44,8 +42,6 @@ export interface CreateAssetDto {
   serialNumber?: string;
   status?: string;
   purchaseDate?: string;
-  purchasePrice?: number | null;
-  warrantyExpiryDate?: string;
 }
 
 export interface UpdateAssetDto {
@@ -57,10 +53,7 @@ export interface UpdateAssetDto {
   serialNumber?: string;
   status?: string;
   purchaseDate?: string;
-  purchasePrice?: number | null;
-  warrantyExpiryDate?: string;
 }
-
 
 export interface AssetFilterParams {
   status?: string;

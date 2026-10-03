@@ -4,14 +4,11 @@ import {
   IsOptional,
   IsDateString,
   IsIn,
-  IsNumber,
   MinLength,
   MaxLength,
   Matches,
   ValidateIf,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-
 
 export class UpdateAssetDto {
   @IsOptional()
@@ -74,22 +71,4 @@ export class UpdateAssetDto {
     },
   )
   purchaseDate?: string;
-
-  @IsOptional()
-  @ValidateIf((e) => e.purchasePrice !== '' && e.purchasePrice != null)
-  @Type(() => Number)
-  @IsNumber({}, { message: 'Purchase price must be a valid number' })
-  purchasePrice?: number;
-
-  @IsOptional()
-  @ValidateIf((e) => e.warrantyExpiryDate !== '' && e.warrantyExpiryDate != null)
-  @IsDateString(
-    {},
-    {
-      message:
-        'Warranty expiry date must be a valid date in format YYYY-MM-DD',
-    },
-  )
-  warrantyExpiryDate?: string;
 }
-

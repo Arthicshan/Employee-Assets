@@ -15,14 +15,12 @@ model Employee {
   email      String   @unique
   department String
   position   String
-  isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   assets    Asset[]
   assignments AssetAssignment[]
   history AssetHistory[] 
-  user      User?
 }
 
 model Asset {
@@ -33,13 +31,10 @@ model Asset {
   brand       String?
   model       String?
   serialNumber String? @unique
-  status             String    @default("available")
-  purchaseDate       DateTime?
-  purchasePrice      Float?
-  warrantyExpiryDate DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
+  status      String   @default("available")
+  purchaseDate DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   employeeId Int?
   employee   Employee? @relation(fields: [employeeId], references: [id])
@@ -95,7 +90,4 @@ model User {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  employeeId   Int?      @unique
-  employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
 }

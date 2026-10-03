@@ -74,25 +74,6 @@ export class AssignmentsService {
   }
 
   async create(data: CreateAssignmentDto) {
-    // 1. Check employee exists
-    const employee = await this.prisma.employee.findUnique({
-      where: { id: data.employeeId },
-    });
-
-    if (!employee) {
-      throw new NotFoundException(
-        `Employee with ID ${data.employeeId} not found`,
-      );
-    }
-
-    // 2. Check employee is active
-    if (!employee.isActive) {
-      throw new BadRequestException(
-        `Cannot assign asset to inactive employee "${employee.firstName} ${employee.lastName}". Only active employees can receive equipment.`,
-      );
-    }
-
-    // 3. Check asset exists
     const asset = await this.prisma.asset.findUnique({
       where: { id: data.assetId },
     });
@@ -103,14 +84,16 @@ export class AssignmentsService {
       );
     }
 
-    // 4. Check asset status is AVAILABLE
-    if (asset.status.toLowerCase() !== 'available') {
-      throw new BadRequestException(
-        `Only available assets can be assigned. Current asset status is "${asset.status}".`,
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: data.employeeId },
+    });
+
+    if (!employee) {
+      throw new NotFoundException(
+        `Employee with ID ${data.employeeId} not found`,
       );
     }
 
-    // 5. Prevent multiple active assignments for the same asset
     const activeAssignment =
       await this.prisma.assetAssignment.findFirst({
         where: {
@@ -125,8 +108,13 @@ export class AssignmentsService {
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    if (asset.status.toLowerCase() !== 'available') {
+      throw new BadRequestException(
+        'Only available assets can be assigned',
+      );
+    }
 
+    return this.prisma.$transaction(async (tx) => {
       const assignment = await tx.assetAssignment.create({
         data: {
           assetId: data.assetId,
