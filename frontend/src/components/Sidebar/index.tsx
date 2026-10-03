@@ -12,6 +12,7 @@ import {
   LogOut,
   User,
   Shield,
+  UserCheck,
 } from 'lucide-react';
 import { UserProfile } from '@/types';
 import { Badge } from '../Badge';
@@ -46,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
       { label: 'Categories', href: '/categories', icon: Layers },
       { label: 'Employees', href: '/employees', icon: Users },
       { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+      { label: 'Users', href: '/users', icon: UserCheck },
     ];
   };
 

@@ -21,6 +21,7 @@ model Employee {
   assets    Asset[]
   assignments AssetAssignment[]
   history AssetHistory[] 
+  user User?
 }
 
 model Asset {
@@ -87,7 +88,10 @@ model User {
   role         String   @default("EMPLOYEE")
   firstName    String
   lastName     String
+  position     String?
   isActive     Boolean  @default(true)
+  employeeId   Int?     @unique
+  employee     Employee? @relation(fields: [employeeId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

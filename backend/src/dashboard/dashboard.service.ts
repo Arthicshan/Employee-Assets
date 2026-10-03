@@ -13,9 +13,6 @@ export class DashboardService {
       assignedAssets,
       damagedAssets,
       totalCategories,
-      categoryGroups,
-      recentAssignments,
-      recentActivity,
     ] = await Promise.all([
       this.prisma.employee.count(),
       this.prisma.asset.count(),
@@ -29,69 +26,7 @@ export class DashboardService {
         where: { status: 'damaged' },
       }),
       this.prisma.assetCategory.count(),
-      this.prisma.asset.groupBy({
-        by: ['category'],
-        _count: {
-          id: true,
-        },
-        orderBy: {
-          _count: {
-            id: 'desc',
-          },
-        },
-      }),
-      this.prisma.assetAssignment.findMany({
-        take: 5,
-        orderBy: {
-          assignedAt: 'desc',
-        },
-        include: {
-          asset: {
-            select: {
-              id: true,
-              name: true,
-              assetTag: true,
-            },
-          },
-          employee: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              employeeNo: true,
-            },
-          },
-        },
-      }),
-      this.prisma.assetHistory.findMany({
-        take: 5,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
-          asset: {
-            select: {
-              id: true,
-              name: true,
-              assetTag: true,
-            },
-          },
-          employee: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              employeeNo: true,
-            },
-          },
-        },
-      }),
     ]);
-
-    const byCategory = (categoryGroups || []).map((group) => ({
-      category: group.category,
-      count: group._count.id,
-    }));
 
     return {
       totalEmployees,
@@ -100,9 +35,6 @@ export class DashboardService {
       assignedAssets,
       damagedAssets,
       totalCategories,
-      byCategory,
-      recentAssignments,
-      recentActivity,
     };
   }
 }  

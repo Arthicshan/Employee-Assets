@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  UserCheck,
 } from 'lucide-react';
 import { sessionManager } from '@/libs/api/session-storage';
 import { UserProfile } from '@/types';
@@ -72,6 +73,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       { label: 'Categories', href: '/categories', icon: Layers },
       { label: 'Employees', href: '/employees', icon: Users },
       { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+      { label: 'Users', href: '/users', icon: UserCheck },
     ];
   };
 

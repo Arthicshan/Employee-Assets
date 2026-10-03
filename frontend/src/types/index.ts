@@ -6,4 +6,5 @@ export * from './asset.types';
 export * from './assignment.types';
 export * from './dashboard.types';
 export * from './employee-portal.types';
+export * from './user.types';
 
