@@ -105,32 +105,46 @@ The database comes pre-seeded with 3 accounts representing each system role:
 
 | Role | Email | Password | Access & Permissions |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@assetflow.com` | `admin123` | Full access (Assets, Categories, Employees, Assignments, Users) |
-| **Asset Manager** | `manager@assetflow.com` | `manager123` | Equipment assignment, return processing, viewing inventory & history |
-| **Employee** | `employee@assetflow.com` | `employee123` | View assigned assets and personal profile |
+| **Administrator** | `admin@assetflow.com` | `admin123` | Full system access (Add/edit/delete Assets, Categories, Employees, Assignments, Audit History) |
+| **Asset Manager** | `manager@assetflow.com` | `manager123` | Operational access (View inventory/employees, assign AVAILABLE assets to ACTIVE employees, process returns) |
+| **Employee** | `employee@assetflow.com` | `employee123` | Self-Service Portal (View custody equipment, personal profile, assignment audit log) |
 
-> **Tip:** The login screen provides 1-click **Quick Demo Account** buttons to instantly fill and sign in with any role.
+> **Tip:** The redesigned corporate login screen provides 1-click **Demo Access** buttons: `[ Admin ]` `[ Manager ]` `[ Employee ]` to pre-fill credentials for instant testing.
 
 ---
 
-## 🧪 Running Automated Tests
+## 📖 Swagger / OpenAPI Documentation
 
-Run the backend unit tests validating assignment and return business rules:
+Interactive Swagger documentation is available out of the box:
+- **URL**: `http://localhost:3001/api/docs`
+- **Features**: JWT Bearer token authentication, organized tags (`Auth`, `Assets`, `Categories`, `Employees`, `Assignments`, `Returns`, `Asset History`, `Dashboard`, `Employee Portal`, `Health`), request/response schema specifications.
 
+---
+
+## 🧪 Automated Testing Suite
+
+The project includes both comprehensive unit tests and end-to-end integration tests:
+
+### 1. Backend Unit Tests (20 Suites, 51 Tests)
 ```bash
 cd backend
-npm test src/assignments/assignments.service.spec.ts src/returns/returns.service.spec.ts
+npm test
 ```
+- ✅ `assignments.service.spec.ts` (Assignment business rules, inactive employee rejection, status validation)
+- ✅ `returns.service.spec.ts` (Return condition handling, asset status transitions)
+- ✅ `employee-portal.service.spec.ts` (Employee portal self-service endpoints)
+- ✅ `employee.service.spec.ts`, `asset.service.spec.ts`, `health.service.spec.ts`, etc.
 
-**Covered Test Scenarios:**
-- ✅ Successful assignment of available asset to active employee in a transaction
-- ❌ Rejection if asset is not `AVAILABLE` (`BadRequestException`)
-- ❌ Rejection if asset already has an active assignment (`BadRequestException`)
-- ❌ Rejection if employee or asset does not exist (`NotFoundException`)
-- ✅ Creation of immutable `AssetHistory` audit entry on assignment
-- ✅ Return processing: transitions asset condition to `available` on `GOOD`
-- ✅ Return processing: transitions asset condition to `damaged` on `DAMAGED`
-- ❌ Rejection if returning an already-returned assignment (`BadRequestException`)
+### 2. Backend E2E Tests (7 Suites, 37 Tests)
+```bash
+cd backend
+npm run test:e2e
+```
+- ✅ `rbac-permissions.e2e-spec.ts` (Complete RBAC permission enforcement: Admin full access, Manager operational access, Manager 403 on category/employee/asset deletion, Employee 403 on administrative endpoints)
+- ✅ `auth.e2e-spec.ts` (3-role authentication, JWT generation, invalid credentials handling)
+- ✅ `core-flows.e2e-spec.ts` (GET /health, asset creation, employee creation, assignment, inactive employee rejection, return processing, history retrieval)
+- ✅ `assets.e2e-spec.ts`, `assignments.e2e-spec.ts`, `returns.e2e-spec.ts`, `app.e2e-spec.ts`
+
 
 ---
 

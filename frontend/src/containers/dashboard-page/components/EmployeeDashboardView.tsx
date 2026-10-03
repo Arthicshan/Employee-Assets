@@ -41,10 +41,11 @@ export const EmployeeDashboardView: React.FC = () => {
     fetchDashboard();
   }, []);
 
-  const employee = data?.profile;
-  const metrics = data?.metrics;
+  const employee = data?.employee || data?.profile;
+  const metrics = (data?.summary as any) || (data?.metrics as any);
   const assignedAssets = data?.assignedAssets || [];
-  const assignments = data?.assignments || [];
+  const assignments = data?.recentAssignments || data?.assignments || [];
+
 
   return (
     <div className="space-y-8">
@@ -103,7 +104,7 @@ export const EmployeeDashboardView: React.FC = () => {
               Currently Assigned Assets
             </span>
             <div className="text-2xl font-bold text-slate-900 mt-0.5">
-              {metrics?.currentlyAssignedCount ?? assignedAssets.length}
+              {metrics?.assignedAssetsCount ?? metrics?.currentlyAssignedCount ?? assignedAssets.length}
             </div>
             <p className="text-xs text-slate-400 mt-0.5">In your custody</p>
           </div>
@@ -123,6 +124,7 @@ export const EmployeeDashboardView: React.FC = () => {
             <p className="text-xs text-slate-400 mt-0.5">All-time asset records</p>
           </div>
         </div>
+
 
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">

@@ -16,14 +16,20 @@ export interface EmployeeHistoryItem {
 }
 
 export interface EmployeeDashboardData {
-  profile: Employee;
+  employee?: Employee;
+  profile?: Employee;
   assignedAssets: Asset[];
-  assignments: AssetAssignment[];
-
-  history: EmployeeHistoryItem[];
-  metrics: {
+  assignments?: AssetAssignment[];
+  recentAssignments?: AssetAssignment[];
+  history?: EmployeeHistoryItem[];
+  summary?: {
+    assignedAssetsCount: number;
+    totalAssignmentsCount: number;
+  };
+  metrics?: {
     currentlyAssignedCount: number;
     totalAssignmentsCount: number;
     isActive: boolean;
   };
 }
+
