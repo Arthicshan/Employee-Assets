@@ -94,6 +94,12 @@ export class AssignmentsService {
       );
     }
 
+    if (!employee.isActive) {
+      throw new BadRequestException(
+        'Cannot assign equipment to an inactive employee',
+      );
+    }
+
     const activeAssignment =
       await this.prisma.assetAssignment.findFirst({
         where: {

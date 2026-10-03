@@ -47,11 +47,37 @@ export class EmployeeService {
   }
 
   async update(id: number, data: UpdateEmployeeDto) {
-    await this.findOne(id);
-    return this.prisma.employee.update({
+    const currentEmp = await this.findOne(id);
+    const updatedEmployee = await this.prisma.employee.update({
       where: { id },
       data,
     });
+
+    // Keep linked User account in sync
+    const linkedUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { employeeId: id },
+          { email: currentEmp.email },
+        ],
+      },
+    });
+
+    if (linkedUser) {
+      await this.prisma.user.update({
+        where: { id: linkedUser.id },
+        data: {
+          ...(data.firstName && { firstName: data.firstName.trim() }),
+          ...(data.lastName && { lastName: data.lastName.trim() }),
+          ...(data.position !== undefined && { position: data.position.trim() }),
+          ...(data.email && { email: data.email.toLowerCase().trim() }),
+          ...(data.isActive !== undefined && { isActive: data.isActive }),
+          employeeId: id,
+        },
+      });
+    }
+
+    return updatedEmployee;
   }
 
   async remove(id: number) {

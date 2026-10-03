@@ -13,7 +13,6 @@ export class EmployeePortalService {
       if (emp) return emp;
     }
 
-    // Fallback: match by User.email
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { employee: true },
@@ -27,20 +26,40 @@ export class EmployeePortalService {
       return user.employee;
     }
 
+    if (user.employeeId) {
+      const empById = await this.prisma.employee.findUnique({
+        where: { id: user.employeeId },
+      });
+      if (empById) return empById;
+    }
+
     const matchedEmp = await this.prisma.employee.findUnique({
       where: { email: user.email },
     });
 
-    if (!matchedEmp) {
-      throw new NotFoundException('No employee record associated with this account');
+    if (matchedEmp) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { employeeId: matchedEmp.id },
+      });
+      return matchedEmp;
     }
 
-    return matchedEmp;
+    throw new NotFoundException('No employee record associated with this account');
   }
 
   async getProfile(userId: number, employeeId?: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
     const employee = await this.resolveEmployee(userId, employeeId);
-    return employee;
+    return {
+      ...employee,
+      firstName: user?.firstName || employee.firstName,
+      lastName: user?.lastName || employee.lastName,
+      position: user?.position || employee.position,
+      email: user?.email || employee.email,
+    };
   }
 
   async getMyAssets(userId: number, employeeId?: number) {
@@ -81,6 +100,9 @@ export class EmployeePortalService {
   }
 
   async getMyDashboard(userId: number, employeeId?: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
     const employee = await this.resolveEmployee(userId, employeeId);
 
     const [assignedAssets, totalAssignments, recentAssignments] = await Promise.all([
@@ -112,11 +134,11 @@ export class EmployeePortalService {
       employee: {
         id: employee.id,
         employeeNo: employee.employeeNo,
-        firstName: employee.firstName,
-        lastName: employee.lastName,
-        email: employee.email,
+        firstName: user?.firstName || employee.firstName,
+        lastName: user?.lastName || employee.lastName,
+        email: user?.email || employee.email,
         department: employee.department,
-        position: employee.position,
+        position: user?.position || employee.position,
       },
       summary: {
         assignedAssetsCount: assignedAssets.length,

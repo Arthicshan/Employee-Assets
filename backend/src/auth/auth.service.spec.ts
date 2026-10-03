@@ -143,7 +143,7 @@ describe('AuthService', () => {
       ).rejects.toThrow(new UnauthorizedException('Account is deactivated'));
     });
 
-    it('should reject login if user has EMPLOYEE role', async () => {
+    it('should allow login if user has EMPLOYEE role', async () => {
       const hashedPassword = await bcrypt.hash('employee123', 10);
       mockPrisma.user.findUnique.mockResolvedValue({
         id: 4,
@@ -153,16 +153,12 @@ describe('AuthService', () => {
         isActive: true,
       });
 
-      await expect(
-        service.login({
-          email: 'employee@assetflow.com',
-          password: 'employee123',
-        }),
-      ).rejects.toThrow(
-        new UnauthorizedException(
-          'Access denied. Only Admin and Manager accounts are authorized to sign in.',
-        ),
-      );
+      const result = await service.login({
+        email: 'employee@assetflow.com',
+        password: 'employee123',
+      });
+      expect(result).toHaveProperty('accessToken');
+      expect(result.user.role).toBe('EMPLOYEE');
     });
   });
 });
