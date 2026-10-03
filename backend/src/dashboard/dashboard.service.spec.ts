@@ -11,9 +11,15 @@ describe('DashboardService', () => {
     },
     asset: {
       count: jest.fn().mockResolvedValue(50),
+      groupBy: jest.fn().mockResolvedValue([
+        { category: 'Laptops', _count: { id: 10 } },
+      ]),
     },
     assetCategory: {
       count: jest.fn().mockResolvedValue(6),
+    },
+    assetAssignment: {
+      findMany: jest.fn().mockResolvedValue([]),
     },
     assetHistory: {
       findMany: jest.fn().mockResolvedValue([]),
