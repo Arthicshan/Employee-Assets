@@ -214,129 +214,133 @@ export const AssetsPageContainer: React.FC = () => {
       />
 
       {/* Add / Edit Asset Modal */}
-      <Modal
-        isOpen={isCreateOpen || !!editingAsset}
-        onClose={() => {
-          setIsCreateOpen(false);
-          setEditingAsset(null);
-        }}
-        title={editingAsset ? `Edit Asset (${editingAsset.assetTag})` : 'Register New Asset'}
-        maxWidth="lg"
-      >
-        <form onSubmit={handleSave} className="space-y-4">
-          {error && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
-              {error}
-              {validationErrors.length > 0 && (
-                <ul className="list-disc list-inside mt-1">
-                  {validationErrors.map((v, i) => (
-                    <li key={i}>{v}</li>
-                  ))}
-                </ul>
-              )}
+      {isAdmin && (
+        <Modal
+          isOpen={isCreateOpen || !!editingAsset}
+          onClose={() => {
+            setIsCreateOpen(false);
+            setEditingAsset(null);
+          }}
+          title={editingAsset ? `Edit Asset (${editingAsset.assetTag})` : 'Register New Asset'}
+          maxWidth="lg"
+        >
+          <form onSubmit={handleSave} className="space-y-4">
+            {error && (
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                {error}
+                {validationErrors.length > 0 && (
+                  <ul className="list-disc list-inside mt-1">
+                    {validationErrors.map((v, i) => (
+                      <li key={i}>{v}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Asset Tag"
+                required
+                placeholder="e.g. LAP-0012"
+                value={formData.assetTag}
+                onChange={(e) => setFormData({ ...formData, assetTag: e.target.value })}
+              />
+              <Input
+                label="Asset Name"
+                required
+                placeholder="e.g. Dell Latitude 5450"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
             </div>
-          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Asset Tag"
-              required
-              placeholder="e.g. LAP-0012"
-              value={formData.assetTag}
-              onChange={(e) => setFormData({ ...formData, assetTag: e.target.value })}
-            />
-            <Input
-              label="Asset Name"
-              required
-              placeholder="e.g. Dell Latitude 5450"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Category"
+                required
+                placeholder="Select category..."
+                options={categories.map((c) => ({ label: c.name, value: c.name }))}
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              />
+              <Input
+                label="Serial Number (Optional)"
+                placeholder="e.g. SN-5450-0012"
+                value={formData.serialNumber || ''}
+                onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+              />
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select
-              label="Category"
-              required
-              placeholder="Select category..."
-              options={categories.map((c) => ({ label: c.name, value: c.name }))}
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            />
-            <Input
-              label="Serial Number (Optional)"
-              placeholder="e.g. SN-5450-0012"
-              value={formData.serialNumber || ''}
-              onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Brand"
+                placeholder="e.g. Dell, Apple, Lenovo"
+                value={formData.brand || ''}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+              />
+              <Input
+                label="Model"
+                placeholder="e.g. Latitude 5450, M3 Max"
+                value={formData.model || ''}
+                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+              />
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Brand"
-              placeholder="e.g. Dell, Apple, Lenovo"
-              value={formData.brand || ''}
-              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-            />
-            <Input
-              label="Model"
-              placeholder="e.g. Latitude 5450, M3 Max"
-              value={formData.model || ''}
-              onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label="Status"
+                options={[
+                  { label: 'Available', value: 'available' },
+                  { label: 'Assigned', value: 'assigned' },
+                  { label: 'Damaged', value: 'damaged' },
+                  { label: 'Under Repair', value: 'under_repair' },
+                  { label: 'Lost', value: 'lost' },
+                  { label: 'Retired', value: 'retired' },
+                ]}
+                value={formData.status || 'available'}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              />
+              <Input
+                label="Purchase Date (Optional)"
+                type="date"
+                value={formData.purchaseDate || ''}
+                onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+              />
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select
-              label="Status"
-              options={[
-                { label: 'Available', value: 'available' },
-                { label: 'Assigned', value: 'assigned' },
-                { label: 'Damaged', value: 'damaged' },
-                { label: 'Under Repair', value: 'under_repair' },
-                { label: 'Lost', value: 'lost' },
-                { label: 'Retired', value: 'retired' },
-              ]}
-              value={formData.status || 'available'}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            />
-            <Input
-              label="Purchase Date (Optional)"
-              type="date"
-              value={formData.purchaseDate || ''}
-              onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                setIsCreateOpen(false);
-                setEditingAsset(null);
-              }}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" isLoading={isSubmitting}>
-              {editingAsset ? 'Update Asset' : 'Register Asset'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setIsCreateOpen(false);
+                  setEditingAsset(null);
+                }}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" isLoading={isSubmitting}>
+                {editingAsset ? 'Update Asset' : 'Register Asset'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {/* Delete Confirmation */}
-      <ConfirmDialog
-        isOpen={!!deletingAsset}
-        onClose={() => setDeletingAsset(null)}
-        onConfirm={handleDelete}
-        title="Delete Asset"
-        message={`Are you sure you want to delete "${deletingAsset?.name}" (${deletingAsset?.assetTag})? This action cannot be undone.`}
-        confirmLabel="Delete Asset"
-        isLoading={isSubmitting}
-      />
+      {isAdmin && (
+        <ConfirmDialog
+          isOpen={!!deletingAsset}
+          onClose={() => setDeletingAsset(null)}
+          onConfirm={handleDelete}
+          title="Delete Asset"
+          message={`Are you sure you want to delete "${deletingAsset?.name}" (${deletingAsset?.assetTag})? This action cannot be undone.`}
+          confirmLabel="Delete Asset"
+          isLoading={isSubmitting}
+        />
+      )}
     </div>
   );
 };
