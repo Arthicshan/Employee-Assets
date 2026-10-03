@@ -33,10 +33,13 @@ model Asset {
   brand       String?
   model       String?
   serialNumber String? @unique
-  status      String   @default("available")
-  purchaseDate DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status             String    @default("available")
+  purchaseDate       DateTime?
+  purchasePrice      Float?
+  warrantyExpiryDate DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
 
   employeeId Int?
   employee   Employee? @relation(fields: [employeeId], references: [id])

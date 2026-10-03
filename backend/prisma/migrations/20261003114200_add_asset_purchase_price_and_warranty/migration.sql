@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Asset" ADD COLUMN IF NOT EXISTS "purchasePrice" DOUBLE PRECISION,
+ADD COLUMN IF NOT EXISTS "warrantyExpiryDate" TIMESTAMP(3);

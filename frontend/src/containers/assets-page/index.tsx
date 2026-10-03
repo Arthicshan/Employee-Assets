@@ -306,6 +306,29 @@ export const AssetsPageContainer: React.FC = () => {
             />
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Purchase Price (Optional)"
+              type="number"
+              step="0.01"
+              placeholder="e.g. 1299.99"
+              value={formData.purchasePrice ?? ''}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  purchasePrice: e.target.value === '' ? null : Number(e.target.value),
+                })
+              }
+            />
+            <Input
+              label="Warranty Expiry Date (Optional)"
+              type="date"
+              value={formData.warrantyExpiryDate || ''}
+              onChange={(e) => setFormData({ ...formData, warrantyExpiryDate: e.target.value })}
+            />
+          </div>
+
+
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Button
               type="button"

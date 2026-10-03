@@ -126,6 +126,7 @@ export class AssignmentsService {
     }
 
     return this.prisma.$transaction(async (tx) => {
+
       const assignment = await tx.assetAssignment.create({
         data: {
           assetId: data.assetId,

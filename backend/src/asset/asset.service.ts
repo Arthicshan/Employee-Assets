@@ -90,6 +90,10 @@ export class AssetService {
         purchaseDate: data.purchaseDate
           ? new Date(data.purchaseDate)
           : undefined,
+        purchasePrice: data.purchasePrice != null ? Number(data.purchasePrice) : undefined,
+        warrantyExpiryDate: data.warrantyExpiryDate
+          ? new Date(data.warrantyExpiryDate)
+          : undefined,
       },
     });
   }
@@ -107,12 +111,19 @@ export class AssetService {
         model: data.model,
         serialNumber: data.serialNumber,
         status: data.status,
-        purchaseDate: data.purchaseDate
-          ? new Date(data.purchaseDate)
+        purchaseDate: data.purchaseDate !== undefined
+          ? (data.purchaseDate ? new Date(data.purchaseDate) : null)
+          : undefined,
+        purchasePrice: data.purchasePrice !== undefined
+          ? (data.purchasePrice != null && (data.purchasePrice as any) !== '' ? Number(data.purchasePrice) : null)
+          : undefined,
+        warrantyExpiryDate: data.warrantyExpiryDate !== undefined
+          ? (data.warrantyExpiryDate ? new Date(data.warrantyExpiryDate) : null)
           : undefined,
       },
     });
   }
+
 
   async remove(id: number) {
     await this.findOne(id);
