@@ -6,6 +6,7 @@ describe('Authentication & Authorization (e2e)', () => {
   let app: INestApplication;
   let adminToken: string;
   let managerToken: string;
+  let employeeToken: string;
 
   beforeAll(async () => {
     app = await createTestApp();
@@ -45,7 +46,23 @@ describe('Authentication & Authorization (e2e)', () => {
     managerToken = res.body.accessToken;
   });
 
-  it('3. Wrong password fails with 401 Unauthorized', async () => {
+  it('3. Employee login succeeds with role EMPLOYEE, valid JWT, and linked employeeId', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({
+        email: 'employee@assetflow.com',
+        password: 'employee123',
+      })
+      .expect(201);
+
+    expect(res.body).toHaveProperty('accessToken');
+    expect(res.body.user).toHaveProperty('role', 'EMPLOYEE');
+    expect(res.body.user.email).toBe('employee@assetflow.com');
+    expect(res.body.user.employeeId).toBeTruthy();
+    employeeToken = res.body.accessToken;
+  });
+
+  it('4. Wrong password fails with 401 Unauthorized', async () => {
     const res = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
@@ -58,7 +75,7 @@ describe('Authentication & Authorization (e2e)', () => {
     expect(message).toContain('Invalid email or password');
   });
 
-  it('4. Unknown email fails with 401 Unauthorized', async () => {
+  it('5. Unknown email fails with 401 Unauthorized', async () => {
     const res = await request(app.getHttpServer())
       .post('/auth/login')
       .send({
@@ -71,20 +88,7 @@ describe('Authentication & Authorization (e2e)', () => {
     expect(message).toContain('Invalid email or password');
   });
 
-  it('5. Employee cannot log in and receives 401 Unauthorized', async () => {
-    const res = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({
-        email: 'employee@assetflow.com',
-        password: 'employee123',
-      })
-      .expect(401);
-
-    const message = res.body.detail || res.body.message;
-    expect(message).toMatch(/only admin and manager/i);
-  });
-
-  it('6. Protected profile route works for Admin and Manager', async () => {
+  it('6. Protected profile route works for Admin, Manager, and Employee', async () => {
     // Admin profile check
     const adminRes = await request(app.getHttpServer())
       .get('/auth/profile')
@@ -102,6 +106,15 @@ describe('Authentication & Authorization (e2e)', () => {
 
     expect(managerRes.body).toHaveProperty('email', 'manager@assetflow.com');
     expect(managerRes.body).toHaveProperty('role', 'MANAGER');
+
+    // Employee profile check
+    const empRes = await request(app.getHttpServer())
+      .get('/auth/profile')
+      .set('Authorization', `Bearer ${employeeToken}`)
+      .expect(200);
+
+    expect(empRes.body).toHaveProperty('email', 'employee@assetflow.com');
+    expect(empRes.body).toHaveProperty('role', 'EMPLOYEE');
 
     // Without token should fail with 401
     await request(app.getHttpServer())

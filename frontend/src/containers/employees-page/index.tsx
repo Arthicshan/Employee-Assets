@@ -10,10 +10,13 @@ import { Input } from '@/components/Input';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Users, Plus, Pencil, Trash2, Search, AlertCircle, Eye } from 'lucide-react';
 import { Employee } from '@/types';
+import { sessionManager } from '@/libs/api/session-storage';
 
 export const EmployeesPageContainer: React.FC = () => {
   const router = useRouter();
+  const isAdmin = sessionManager.getUser()?.role === 'ADMIN';
   const {
+
     employees,
     isLoading,
     error,
@@ -99,20 +102,24 @@ export const EmployeesPageContainer: React.FC = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => openEditModal(row)}
-            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors cursor-pointer"
-            title="Edit Employee"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setDeletingEmployee(row)}
-            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-            title="Delete Employee"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => openEditModal(row)}
+                className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+                title="Edit Employee"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setDeletingEmployee(row)}
+                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                title="Delete Employee"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
       ),
     },
@@ -124,18 +131,21 @@ export const EmployeesPageContainer: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Users className="w-6 h-6 text-indigo-600" />
+            <Users className="w-6 h-6 text-blue-600" />
             Employee Directory
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             Maintain employee records, department assignments, and equipment custody
           </p>
         </div>
-        <Button variant="primary" onClick={openCreateModal}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Add Employee
-        </Button>
+        {isAdmin && (
+          <Button variant="primary" onClick={openCreateModal}>
+            <Plus className="w-4 h-4 mr-1.5" />
+            Add Employee
+          </Button>
+        )}
       </div>
+
 
       {error && (
         <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-2.5">

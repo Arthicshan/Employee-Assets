@@ -1,12 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { createTestApp } from './setup-test-app';
+import { createTestApp, getAuthToken } from './setup-test-app';
 
 describe('Returns (e2e)', () => {
   let app: INestApplication;
+  let adminToken: string;
 
   beforeAll(async () => {
     app = await createTestApp();
+    adminToken = await getAuthToken(app);
   });
 
   afterAll(async () => {
@@ -16,6 +18,7 @@ describe('Returns (e2e)', () => {
   it('/returns (POST) - rejects return for non-existent assignment with 404', async () => {
     const res = await request(app.getHttpServer())
       .post('/returns')
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assignmentId: 99999,
         condition: 'GOOD',
@@ -25,4 +28,5 @@ describe('Returns (e2e)', () => {
     expect(res.body).toHaveProperty('status', 404);
   });
 });
+
 

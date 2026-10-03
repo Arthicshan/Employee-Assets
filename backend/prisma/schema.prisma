@@ -8,8 +8,8 @@ datasource db {
 }
 
 model Employee {
-  id         Int      @id @default(autoincrement())
-  employeeNo String   @unique
+  id        Int      @id @default(autoincrement())
+  employeeNo String  @unique
   firstName  String
   lastName   String
   email      String   @unique
@@ -19,32 +19,31 @@ model Employee {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  assets      Asset[]
+  assets    Asset[]
   assignments AssetAssignment[]
-  history     AssetHistory[]
-  user        User?
+  history AssetHistory[] 
+  user      User?
 }
 
 model Asset {
-  id                 Int       @id @default(autoincrement())
-  assetTag           String    @unique
-  name               String
-  category           String
-  brand              String?
-  model              String?
-  serialNumber       String?   @unique
-  status             String    @default("available")
-  purchaseDate       DateTime?
-  purchasePrice      Float?
-  warrantyExpiryDate DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id          Int      @id @default(autoincrement())
+  assetTag    String   @unique
+  name        String
+  category    String
+  brand       String?
+  model       String?
+  serialNumber String? @unique
+  status      String   @default("available")
+  purchaseDate DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   employeeId Int?
   employee   Employee? @relation(fields: [employeeId], references: [id])
 
+
   assignments AssetAssignment[]
-  history     AssetHistory[]
+  history AssetHistory[]
 }
 
 model AssetCategory {
@@ -69,7 +68,7 @@ model AssetAssignment {
 
   asset      Asset     @relation(fields: [assetId], references: [id])
   employee   Employee  @relation(fields: [employeeId], references: [id])
-}
+} 
 
 model AssetHistory {
   id         Int      @id @default(autoincrement())

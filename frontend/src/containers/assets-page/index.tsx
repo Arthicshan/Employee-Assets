@@ -12,10 +12,13 @@ import { StatusBadge } from '@/components/Badge';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Boxes, Plus, Pencil, Trash2, Search, Filter, AlertCircle, Eye } from 'lucide-react';
 import { Asset } from '@/types';
+import { sessionManager } from '@/libs/api/session-storage';
 
 export const AssetsPageContainer: React.FC = () => {
   const router = useRouter();
+  const isAdmin = sessionManager.getUser()?.role === 'ADMIN';
   const {
+
     assets,
     categories,
     isLoading,
@@ -121,22 +124,25 @@ export const AssetsPageContainer: React.FC = () => {
           </button>
           <button
             onClick={() => openEditModal(row)}
-            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
             title="Edit Asset"
           >
             <Pencil className="w-4 h-4" />
           </button>
-          <button
-            onClick={() => setDeletingAsset(row)}
-            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-            title="Delete Asset"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setDeletingAsset(row)}
+              className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+              title="Delete Asset"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       ),
     },
   ];
+
 
   return (
     <div className="space-y-6">

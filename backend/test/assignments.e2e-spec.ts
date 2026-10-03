@@ -1,12 +1,14 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { createTestApp } from './setup-test-app';
+import { createTestApp, getAuthToken } from './setup-test-app';
 
 describe('Assignments (e2e)', () => {
   let app: INestApplication;
+  let adminToken: string;
 
   beforeAll(async () => {
     app = await createTestApp();
+    adminToken = await getAuthToken(app);
   });
 
   afterAll(async () => {
@@ -16,6 +18,7 @@ describe('Assignments (e2e)', () => {
   it('/assignments (GET) - lists assignments', async () => {
     const res = await request(app.getHttpServer())
       .get('/assignments')
+      .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
 
     expect(res.body).toHaveProperty('data');
@@ -25,6 +28,7 @@ describe('Assignments (e2e)', () => {
   it('/assignments (POST) - rejects invalid payload with RFC 7807 problem details', async () => {
     const res = await request(app.getHttpServer())
       .post('/assignments')
+      .set('Authorization', `Bearer ${adminToken}`)
       .send({
         assetId: 99999,
         employeeId: 99999,
@@ -34,4 +38,5 @@ describe('Assignments (e2e)', () => {
     expect(res.body).toHaveProperty('status', 404);
   });
 });
+
 
