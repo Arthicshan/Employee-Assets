@@ -15,7 +15,6 @@ model Employee {
   email      String   @unique
   department String
   position   String
-  isActive   Boolean  @default(true)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -35,8 +34,6 @@ model Asset {
   serialNumber String? @unique
   status      String   @default("available")
   purchaseDate DateTime?
-  purchasePrice Float?
-  warrantyExpiryDate DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

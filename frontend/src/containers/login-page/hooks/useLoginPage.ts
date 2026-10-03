@@ -38,25 +38,6 @@ export function useLoginPage() {
     }
   };
 
-  const fillCredentials = (role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE') => {
-    setError(null);
-    setValidationErrors([]);
-    switch (role) {
-      case 'ADMIN':
-        setEmail('admin@assetflow.com');
-        setPassword('admin123');
-        break;
-      case 'MANAGER':
-        setEmail('manager@assetflow.com');
-        setPassword('manager123');
-        break;
-      case 'EMPLOYEE':
-        setEmail('employee@assetflow.com');
-        setPassword('employee123');
-        break;
-    }
-  };
-
   return {
     email,
     setEmail,
@@ -66,7 +47,6 @@ export function useLoginPage() {
     error,
     validationErrors,
     handleSubmit,
-    fillCredentials,
   };
 }
 

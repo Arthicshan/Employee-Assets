@@ -51,7 +51,6 @@ describe('AssignmentsService', () => {
     };
 
     it('should throw NotFoundException if employee does not exist', async () => {
-      mockPrisma.asset.findUnique.mockResolvedValue({ id: 1, status: 'available' });
       mockPrisma.employee.findUnique.mockResolvedValue(null);
 
       await expect(service.create(validDto)).rejects.toThrow(NotFoundException);
@@ -59,7 +58,6 @@ describe('AssignmentsService', () => {
     });
 
     it('should reject assignment if employee is inactive', async () => {
-      mockPrisma.asset.findUnique.mockResolvedValue({ id: 1, status: 'available' });
       mockPrisma.employee.findUnique.mockResolvedValue({
         id: 10,
         firstName: 'John',

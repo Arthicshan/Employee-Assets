@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { usersService } from '@/services/users/users.service';
 import { SystemUser, CreateSystemUserDto, UpdateSystemUserDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
-import { sessionManager } from '@/libs/api/session-storage';
 
 export function useUsersPage() {
   const [users, setUsers] = useState<SystemUser[]>([]);
@@ -90,18 +89,7 @@ export function useUsersPage() {
         if (formData.password) {
           updatePayload.password = formData.password;
         }
-        const updated = await usersService.updateUser(editingUser.id, updatePayload);
-        const currentLoggedIn = sessionManager.getUser();
-        if (currentLoggedIn && currentLoggedIn.id === editingUser.id) {
-          sessionManager.setUser({
-            ...currentLoggedIn,
-            firstName: updated.firstName,
-            lastName: updated.lastName,
-            email: updated.email,
-            role: updated.role,
-          });
-          window.dispatchEvent(new Event('storage'));
-        }
+        await usersService.updateUser(editingUser.id, updatePayload);
         setEditingUser(null);
       } else {
         await usersService.createUser(formData);

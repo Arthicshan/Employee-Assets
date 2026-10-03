@@ -15,7 +15,6 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { sessionManager } from '@/libs/api/session-storage';
-import { authService } from '@/services/auth/auth.service';
 import { UserProfile } from '@/types';
 import { Sidebar } from '../Sidebar';
 import { Header } from '../Header';
@@ -39,25 +38,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       router.push('/login');
     } else {
       setCurrentUser(user);
-      // Fetch latest profile from server to guarantee freshest name/position
-      authService.getProfile()
-        .then((fresh) => {
-          if (fresh && (fresh.firstName !== user.firstName || fresh.lastName !== user.lastName || fresh.email !== user.email)) {
-            sessionManager.setUser(fresh);
-            setCurrentUser(fresh);
-          }
-        })
-        .catch(() => {
-          // Ignore network errors on background refresh
-        });
     }
-
-    const handleStorage = () => {
-      const u = sessionManager.getUser();
-      if (u) setCurrentUser(u);
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
   }, [pathname, router]);
 
   // If on login page, render children directly without sidebar/header

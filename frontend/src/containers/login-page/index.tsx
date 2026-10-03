@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useLoginPage } from './hooks/useLoginPage';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
-import { Shield, KeyRound, AlertCircle, Eye, EyeOff, UserCheck, Layers } from 'lucide-react';
+import { Shield, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export const LoginPageContainer: React.FC = () => {
   const {
@@ -16,16 +16,9 @@ export const LoginPageContainer: React.FC = () => {
     error,
     validationErrors,
     handleSubmit,
-    fillCredentials,
   } = useLoginPage();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedDemo, setSelectedDemo] = useState<'ADMIN' | 'MANAGER' | 'EMPLOYEE' | null>(null);
-
-  const handleSelectDemo = (role: 'ADMIN' | 'MANAGER' | 'EMPLOYEE') => {
-    setSelectedDemo(role);
-    fillCredentials(role);
-  };
 
   return (
     <div className="min-h-screen bg-[#0B132B] flex flex-col justify-center items-center p-4 selection:bg-blue-600 selection:text-white">
@@ -74,10 +67,7 @@ export const LoginPageContainer: React.FC = () => {
               required
               placeholder="name@company.com"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setSelectedDemo(null);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
               autoComplete="email"
             />
@@ -88,10 +78,7 @@ export const LoginPageContainer: React.FC = () => {
               required
               placeholder="••••••••"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setSelectedDemo(null);
-              }}
+              onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               autoComplete="current-password"
               rightElement={
@@ -118,68 +105,6 @@ export const LoginPageContainer: React.FC = () => {
               Sign In
             </Button>
           </form>
-
-          {/* Demo Access */}
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                Demo Access
-              </span>
-              <span className="text-[11px] text-slate-400">Pre-configured roles</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleSelectDemo('ADMIN')}
-                className={`px-2.5 py-2.5 rounded-lg text-xs font-medium border transition-colors flex flex-col items-center gap-1 cursor-pointer w-full text-center ${
-                  selectedDemo === 'ADMIN'
-                    ? 'bg-blue-50 border-blue-500 text-blue-700 font-semibold'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                }`}
-              >
-                <Shield className="w-4 h-4 text-blue-600" />
-                <span>Admin</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectDemo('MANAGER')}
-                className={`px-2.5 py-2.5 rounded-lg text-xs font-medium border transition-colors flex flex-col items-center gap-1 cursor-pointer w-full text-center ${
-                  selectedDemo === 'MANAGER'
-                    ? 'bg-blue-50 border-blue-500 text-blue-700 font-semibold'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                }`}
-              >
-                <Layers className="w-4 h-4 text-slate-700" />
-                <span>Manager</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectDemo('EMPLOYEE')}
-                className={`px-2.5 py-2.5 rounded-lg text-xs font-medium border transition-colors flex flex-col items-center gap-1 cursor-pointer w-full text-center ${
-                  selectedDemo === 'EMPLOYEE'
-                    ? 'bg-blue-50 border-blue-500 text-blue-700 font-semibold'
-                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                }`}
-              >
-                <UserCheck className="w-4 h-4 text-emerald-600" />
-                <span>Employee</span>
-              </button>
-            </div>
-
-            {/* Subtle role indicator */}
-            <div className="mt-3 py-2 px-3 bg-slate-50 rounded-lg text-[11px] text-slate-500 flex items-center justify-between border border-slate-100">
-              <span className="font-medium text-slate-600">
-                {selectedDemo === 'ADMIN' && 'Admin: System Administrator (Full CRUD)'}
-                {selectedDemo === 'MANAGER' && 'Manager: Operations & Assignments'}
-                {selectedDemo === 'EMPLOYEE' && 'Employee: Self-Service Portal (Assigned Assets)'}
-                {!selectedDemo && 'Click any role above to pre-fill credentials'}
-              </span>
-              {selectedDemo && (
-                <span className="text-blue-600 font-semibold">Active</span>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* Security Note Footer */}
