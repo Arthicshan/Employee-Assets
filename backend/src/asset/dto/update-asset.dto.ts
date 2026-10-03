@@ -1,27 +1,26 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
-  IsNotEmpty,
   IsOptional,
   IsDateString,
   IsIn,
 } from 'class-validator';
 
-export class CreateAssetDto {
-  @ApiProperty({ example: 'LAP-0012', description: 'Unique asset inventory tag' })
+export class UpdateAssetDto {
+  @ApiPropertyOptional({ example: 'LAP-0012', description: 'Unique asset inventory tag' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  assetTag: string;
+  assetTag?: string;
 
-  @ApiProperty({ example: 'Dell Latitude 5450', description: 'Equipment name/title' })
+  @ApiPropertyOptional({ example: 'Dell Latitude 5450', description: 'Equipment name/title' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  name: string;
+  name?: string;
 
-  @ApiProperty({ example: 'Laptops', description: 'Asset category name' })
+  @ApiPropertyOptional({ example: 'Laptops', description: 'Asset category name' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  category: string;
+  category?: string;
 
   @ApiPropertyOptional({ example: 'Dell', description: 'Brand or manufacturer' })
   @IsOptional()
@@ -40,7 +39,6 @@ export class CreateAssetDto {
 
   @ApiPropertyOptional({
     enum: ['available', 'assigned', 'damaged', 'under_repair', 'lost', 'retired'],
-    default: 'available',
     description: 'Current lifecycle status of the asset',
   })
   @IsOptional()

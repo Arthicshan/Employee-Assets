@@ -1,25 +1,18 @@
 import { Controller, Get } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { Public } from '../common/decorators/public.decorator.js';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { HealthService } from './health.service';
+import { Public } from '../common/decorators/public.decorator';
 
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly healthService: HealthService) {}
 
   @Public()
   @Get()
+  @ApiOperation({ summary: 'System and database health check' })
+  @ApiResponse({ status: 200, description: 'Service is healthy and database is connected' })
   async check() {
-    let dbStatus = 'connected';
-    try {
-      await this.prisma.$queryRaw`SELECT 1`;
-    } catch {
-      dbStatus = 'disconnected';
-    }
-
-    return {
-      status: dbStatus === 'connected' ? 'ok' : 'degraded',
-      database: dbStatus,
-      timestamp: new Date().toISOString(),
-    };
+    return this.healthService.check();
   }
 }

@@ -26,6 +26,7 @@ export function useEmployeesPage() {
     email: '',
     department: '',
     position: '',
+    isActive: true,
   };
   const [formData, setFormData] = useState<CreateEmployeeDto>(initialForm);
 
@@ -75,6 +76,7 @@ export function useEmployeesPage() {
       email: emp.email,
       department: emp.department,
       position: emp.position,
+      isActive: emp.isActive !== false,
     });
     setError(null);
     setValidationErrors([]);

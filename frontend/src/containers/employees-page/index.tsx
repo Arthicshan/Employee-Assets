@@ -74,6 +74,20 @@ export const EmployeesPageContainer: React.FC = () => {
       accessor: (row) => <span className="text-xs text-slate-600 font-medium">{row.position}</span>,
     },
     {
+      header: 'Status',
+      accessor: (row) => (
+        <span
+          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+            row.isActive !== false
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-slate-100 text-slate-500 border border-slate-200'
+          }`}
+        >
+          {row.isActive !== false ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+    {
       header: 'Actions',
       className: 'text-right',
       accessor: (row) => (
@@ -228,6 +242,28 @@ export const EmployeesPageContainer: React.FC = () => {
               value={formData.position}
               onChange={(e) => setFormData({ ...formData, position: e.target.value })}
             />
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50">
+            <div>
+              <p className="text-xs font-semibold text-slate-800">Employment Status</p>
+              <p className="text-[11px] text-slate-500">
+                {formData.isActive !== false
+                  ? 'Active employee (eligible to receive equipment assignments)'
+                  : 'Inactive employee (blocked from receiving new assignments)'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, isActive: formData.isActive === false ? true : false })}
+              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                formData.isActive !== false
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : 'bg-slate-200 text-slate-700 border-slate-300'
+              }`}
+            >
+              {formData.isActive !== false ? 'Active' : 'Inactive'}
+            </button>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
