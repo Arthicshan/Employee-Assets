@@ -15,7 +15,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { sessionManager } from '@/libs/api/session-storage';
-import { UserProfile } from '@/types';
+import { useSession } from '@/libs/api/use-session';
 import { Sidebar } from '../Sidebar';
 import { Header } from '../Header';
 
@@ -26,7 +26,7 @@ interface AppShellProps {
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const currentUser = useSession();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -36,8 +36,6 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
     const user = sessionManager.getUser();
     if (!sessionManager.isAuthenticated() || !user) {
       router.push('/login');
-    } else {
-      setCurrentUser(user);
     }
   }, [pathname, router]);
 
@@ -45,6 +43,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   if (pathname === '/login') {
     return <>{children}</>;
   }
+
+  if (!currentUser) return null;
 
   const handleLogout = () => {
     sessionManager.clear();
@@ -65,6 +65,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         { label: 'Assets', href: '/assets', icon: Boxes },
         { label: 'Employees', href: '/employees', icon: Users },
         { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+      { label: 'Returns', href: '/returns', icon: ClipboardList },
       ];
     }
     return [
@@ -73,6 +74,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       { label: 'Categories', href: '/categories', icon: Layers },
       { label: 'Employees', href: '/employees', icon: Users },
       { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+      { label: 'Returns', href: '/returns', icon: ClipboardList },
       { label: 'Users', href: '/users', icon: UserCheck },
     ];
   };
@@ -80,14 +82,14 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const navItems = getNavItems();
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="h-dvh overflow-hidden bg-slate-50 flex">
       {/* Sidebar for Desktop */}
       <Sidebar currentUser={currentUser} onLogout={handleLogout} />
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Mobile Brand Top Bar */}
-        <div className="md:hidden h-14 bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800">
+        <div className="md:hidden h-12 shrink-0 bg-slate-900 text-white flex items-center justify-between px-4 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white text-xs">
               AF
@@ -105,7 +107,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
 
         {/* Mobile Navigation Drawer */}
         {isMobileOpen && (
-          <div className="md:hidden bg-slate-900 border-b border-slate-800 px-4 py-4 space-y-1">
+          <div className="md:hidden shrink-0 max-h-[50dvh] overflow-y-auto bg-slate-900 border-b border-slate-800 px-4 py-4 space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -142,7 +144,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         />
 
         {/* Page Content */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 min-h-0 p-4 lg:p-5 overflow-y-auto">{children}</main>
       </div>
     </div>
   );

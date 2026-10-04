@@ -9,6 +9,7 @@ import {
   Home,
   User,
   LogOut,
+  Menu,
 } from 'lucide-react';
 import { Badge } from '@/components/Badge';
 import { UserProfile } from '@/types';
@@ -32,14 +33,17 @@ export const Header: React.FC<HeaderProps> = ({
     if (pathname.startsWith('/assets')) return 'Asset Inventory';
     if (pathname.startsWith('/categories')) return 'Asset Categories';
     if (pathname.startsWith('/employees')) return 'Employee Directory';
+    if (pathname.startsWith('/returns')) return 'Asset Returns';
+    if (pathname.startsWith('/users')) return 'System Users';
     if (pathname.startsWith('/assignments')) return 'Asset Assignments & Returns';
     return 'AssetFlow';
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-4 md:px-8 flex items-center justify-between sticky top-0 z-20 shadow-xs">
+    <header className="h-14 shrink-0 bg-white border-b border-slate-200 px-3 md:px-5 flex items-center justify-between sticky top-0 z-20 shadow-xs">
       {/* Navigation Controls: Back, Forward, Home, Breadcrumb */}
       <div className="flex items-center gap-2 md:gap-3">
+        <button type="button" onClick={onOpenMobileNav} aria-label="Open navigation" className="md:hidden p-2"><Menu className="w-4 h-4" /></button>
         {/* Navigation History Controls */}
         <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 shadow-2xs">
           <button

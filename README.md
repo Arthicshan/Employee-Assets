@@ -69,10 +69,11 @@ npm install --legacy-peer-deps
 # 3. Apply database migrations
 npx prisma migrate deploy
 
-# 4. Seed initial data (users, categories, employees, assets)
-npm run prisma db seed
+# 4. Seed a NEW database only (this script clears existing inventory)
+npx ts-node prisma/seed.ts
 
-# 5. Start the backend API server
+# 5. Build and start the backend API server
+npm run build
 npm run start:prod
 # API runs at: http://localhost:3001
 ```
@@ -105,7 +106,7 @@ The database comes pre-seeded with 3 accounts representing each system role:
 
 | Role | Email | Password | Access & Permissions |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@assetflow.com` | `admin123` | Full system access (Add/edit/delete Assets, Categories, Employees, Assignments, Audit History) |
+| **Administrator** | `admin@assetflow.com` | `admin123` | Full system access (Asset/category/employee/user management; assignment and returns; read-only audit history) |
 | **Asset Manager** | `manager@assetflow.com` | `manager123` | Operational access (View inventory/employees, assign AVAILABLE assets to ACTIVE employees, process returns) |
 | **Employee** | `employee@assetflow.com` | `employee123` | Self-Service Portal (View custody equipment, personal profile, assignment audit log) |
 
@@ -135,10 +136,11 @@ npm test
 - ✅ `employee-portal.service.spec.ts` (Employee portal self-service endpoints)
 - ✅ `employee.service.spec.ts`, `asset.service.spec.ts`, `health.service.spec.ts`, etc.
 
-### 2. Backend E2E Tests (7 Suites, 37 Tests)
+### 2. Backend E2E Tests (8 Suites, 63 Tests)
 ```bash
 cd backend
 npm run test:e2e
+# Creates a temporary PostgreSQL schema, migrates and seeds it, runs tests, then removes it.
 ```
 - ✅ `rbac-permissions.e2e-spec.ts` (Complete RBAC permission enforcement: Admin full access, Manager operational access, Manager 403 on category/employee/asset deletion, Employee 403 on administrative endpoints)
 - ✅ `auth.e2e-spec.ts` (3-role authentication, JWT generation, invalid credentials handling)
@@ -222,3 +224,23 @@ Employee_Asset_Inventory_Management/
     │   └── types/                     # Shared TypeScript contracts
     └── .env.local                     # Frontend environment config
 ```
+
+## Assessment fixes and verified behavior
+
+See [ASSESSMENT_AUDIT.md](ASSESSMENT_AUDIT.md) for the requirement matrix, fixes, and verification results.
+
+- `/assets/:id/history` and both PUT/PATCH asset updates are supported.
+- Asset DELETE retires the asset and retains its audit trail. Return an actively assigned asset first.
+- Employees referenced by assignment/history records are deactivated when deleted; unused employee records can be deleted.
+- Referenced categories cannot be deleted. Rename cascades to assets; deactivate a category to prevent new registrations.
+- Assignment and return checks run inside serializable transactions. A database unique index prevents two active assignments for one asset.
+- Return condition and return notes are stored separately from original assignment notes.
+- Managers can change lifecycle status using `PATCH /assets/:id/status`; creating or clearing an assignment must use the assignment/return workflow.
+- Assets, employees, categories and users support `page`, `limit`, `search`, `sortBy`, `sortOrder` queries. Without pagination these endpoints retain their array response for existing screens.
+- Assignments always return `{data, meta}` and support search/filtering/sorting across pages.
+- Inventory additionally supports status, exact category, and employee filters; employee search includes code, name, email, department and position.
+- Asset status remains lowercase in the established API contract; condition and assignment status are uppercase.
+- Returns are available at `/returns`; assignments retain their existing return controls.
+- Roles are ADMIN, MANAGER and EMPLOYEE, managed on the Users screen. Audit history is read-only.
+
+`npm run test:e2e` uses the configured PostgreSQL server with a unique temporary `assessment_test_<timestamp>` schema. An optional `TEST_DATABASE_URL` can target a separate test database. It does not seed or reset the app's working schema. Tests must use this runner. Directly running the existing seed script resets inventory, so use it only for a new/disposable database.

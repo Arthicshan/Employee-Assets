@@ -1,3 +1,5 @@
+import { Query } from '@nestjs/common';
+import { ListQueryDto } from '../common/dto/list-query.dto';
 import {
   Controller,
   Get,
@@ -30,8 +32,8 @@ export class UsersController {
   @Get()
   @ApiOperation({ summary: 'List all system users (Admin only)' })
   @ApiResponse({ status: 200, description: 'List of system users' })
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() query: ListQueryDto) {
+    return this.usersService.findAll(query);
   }
 
   @Get(':id')

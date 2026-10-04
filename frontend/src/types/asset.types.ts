@@ -9,6 +9,8 @@ export interface AssetHistory {
   assetId: number;
   employeeId?: number | null;
   action: string;
+  previousStatus?: string | null;
+  newStatus?: string | null;
   notes?: string | null;
   createdAt: string;
   employee?: Employee | null;
@@ -24,6 +26,10 @@ export interface Asset {
   model?: string | null;
   serialNumber?: string | null;
   status: string;
+  condition: AssetCondition;
+  notes?: string | null;
+  purchasePrice?: number | null;
+  warrantyExpiryDate?: string | null;
   purchaseDate?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -41,6 +47,10 @@ export interface CreateAssetDto {
   model?: string;
   serialNumber?: string;
   status?: string;
+  condition?: AssetCondition;
+  notes?: string;
+  purchasePrice?: number;
+  warrantyExpiryDate?: string;
   purchaseDate?: string;
 }
 
@@ -52,10 +62,15 @@ export interface UpdateAssetDto {
   model?: string;
   serialNumber?: string;
   status?: string;
+  condition?: AssetCondition;
+  notes?: string;
+  purchasePrice?: number;
+  warrantyExpiryDate?: string;
   purchaseDate?: string;
 }
 
 export interface AssetFilterParams {
+  employeeId?: number;
   status?: string;
   category?: string;
   search?: string;

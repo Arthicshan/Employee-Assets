@@ -1,3 +1,4 @@
+import { ParseIntPipe } from '@nestjs/common';
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssetHistoryService } from './asset-history.service';
@@ -26,7 +27,7 @@ export class AssetHistoryController {
   @Get('asset/:assetId')
   @ApiOperation({ summary: 'Get lifecycle audit trail for a specific asset (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Asset lifecycle events returned' })
-  findByAsset(@Param('assetId') assetId: string) {
+  findByAsset(@Param('assetId', ParseIntPipe) assetId: string) {
     return this.assetHistoryService.findByAsset(Number(assetId));
   }
 }

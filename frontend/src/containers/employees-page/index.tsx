@@ -6,6 +6,7 @@ import { useEmployeesPage } from './hooks/useEmployeesPage';
 import { Table, Column } from '@/components/Table';
 import { Button } from '@/components/Button';
 import { Modal } from '@/components/Modal';
+import { Select } from '@/components/Select';
 import { Input } from '@/components/Input';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Users, Plus, Pencil, Trash2, Search, AlertCircle, Eye } from 'lucide-react';
@@ -17,7 +18,7 @@ export const EmployeesPageContainer: React.FC = () => {
   const isAdmin = sessionManager.getUser()?.role === 'ADMIN';
   const {
 
-    employees,
+    employees, departments, departmentFilter, setDepartmentFilter, activeFilter, setActiveFilter,
     isLoading,
     error,
     validationErrors,
@@ -169,6 +170,10 @@ export const EmployeesPageContainer: React.FC = () => {
       </div>
 
       {/* Table */}
+      <div className="flex gap-3">
+        <Select aria-label="Employee Status" value={activeFilter} onChange={e => setActiveFilter(e.target.value)} options={[{label: 'All Statuses', value: ''}, {label:'Active', value:'ACTIVE'}, {label:'Inactive', value:'INACTIVE'}]} />
+        <Select aria-label="Employee Department" value={departmentFilter} onChange={e => setDepartmentFilter(e.target.value)} options={[{label:'All Departments',value:''}, ...departments.map(value => ({label:value,value}))]} />
+      </div>
       <Table
         columns={columns}
         data={employees}

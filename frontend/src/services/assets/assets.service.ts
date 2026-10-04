@@ -2,8 +2,9 @@ import { apiClient } from '@/libs/api/api-client';
 import { Asset, AssetHistory, CreateAssetDto, UpdateAssetDto, AssetFilterParams } from '@/types';
 
 export const assetsService = {
+  async changeStatus(id: number, status: string): Promise<Asset> { return apiClient.patch<Asset>(`/assets/${id}/status`, {status}); },
   async getAssets(filters?: AssetFilterParams): Promise<Asset[]> {
-    return apiClient.get<Asset[]>('/assets', filters);
+    return apiClient.get<Asset[]>('/assets', {...filters});
   },
 
   async getAssetById(id: number): Promise<Asset> {

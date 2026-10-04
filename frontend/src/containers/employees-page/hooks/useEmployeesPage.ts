@@ -10,6 +10,8 @@ export function useEmployeesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [activeFilter, setActiveFilter] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('');
   const [search, setSearch] = useState('');
 
   // Modals
@@ -36,18 +38,22 @@ export function useEmployeesPage() {
     try {
       const data = await employeesService.getEmployees();
       setEmployees(data);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to fetch employees');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch employees');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchEmployees();
+    const timer = setTimeout(() => { void fetchEmployees(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchEmployees]);
 
+  const departments = [...new Set(employees.map(emp => emp.department))].sort();
   const filteredEmployees = employees.filter((emp) => {
+    if (activeFilter && (emp.isActive !== false) !== (activeFilter === "ACTIVE")) return false;
+    if (departmentFilter && emp.department !== departmentFilter) return false;
     if (!search) return true;
     const term = search.toLowerCase();
     return (
@@ -97,12 +103,12 @@ export function useEmployeesPage() {
         setIsCreateOpen(false);
       }
       await fetchEmployees();
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError(err?.message || 'Failed to save employee');
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to save employee');
       }
     } finally {
       setIsSubmitting(false);
@@ -116,8 +122,8 @@ export function useEmployeesPage() {
       await employeesService.deleteEmployee(deletingEmployee.id);
       setDeletingEmployee(null);
       await fetchEmployees();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to delete employee');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete employee');
     } finally {
       setIsSubmitting(false);
     }
@@ -125,6 +131,7 @@ export function useEmployeesPage() {
 
   return {
     employees: filteredEmployees,
+    departments, departmentFilter, setDepartmentFilter, activeFilter, setActiveFilter,
     isLoading,
     error,
     validationErrors,

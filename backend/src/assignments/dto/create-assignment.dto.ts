@@ -1,6 +1,6 @@
 import {
+  IsDateString,
   IsInt,
-  IsNotEmpty,
   IsOptional,
   IsString,
   Min,
@@ -18,4 +18,7 @@ export class CreateAssignmentDto {
   @IsOptional()
   @IsString()
   notes?: string;
+  @IsOptional()
+  @IsDateString()
+  assignedAt?: string;
 }

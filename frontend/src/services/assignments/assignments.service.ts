@@ -3,6 +3,9 @@ import { AssetAssignment, CreateAssignmentDto, PaginatedResponse } from '@/types
 
 export const assignmentsService = {
   async getAssignments(params?: {
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
     status?: string;
     assetId?: number;
     employeeId?: number;

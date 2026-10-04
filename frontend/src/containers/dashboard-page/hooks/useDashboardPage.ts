@@ -15,15 +15,16 @@ export function useDashboardPage() {
     try {
       const data = await dashboardService.getSummary();
       setSummary(data);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load dashboard metrics');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to load dashboard metrics');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchSummary();
+    const timer = setTimeout(() => { void fetchSummary(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchSummary]);
 
   return {

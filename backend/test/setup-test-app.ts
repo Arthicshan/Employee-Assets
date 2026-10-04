@@ -4,6 +4,7 @@ import { AppModule } from '../src/app.module';
 import { ProblemDetailsFilter } from '../src/common/filters/problem-details.filter';
 
 export async function createTestApp(): Promise<INestApplication> {
+  if (!process.env.TEST_DATABASE_URL) throw new Error('Use npm run test:e2e to run integration tests in an isolated database schema');
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
   }).compile();

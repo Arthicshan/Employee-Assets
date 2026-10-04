@@ -1,0 +1,15 @@
+ALTER TABLE "Asset" ADD COLUMN "condition" TEXT NOT NULL DEFAULT 'GOOD', ADD COLUMN "notes" TEXT;
+ALTER TABLE "AssetAssignment" ADD COLUMN "returnCondition" TEXT, ADD COLUMN "returnNotes" TEXT;
+ALTER TABLE "AssetHistory" ADD COLUMN "previousStatus" TEXT, ADD COLUMN "newStatus" TEXT;
+UPDATE "Asset" SET "serialNumber" = NULL WHERE trim("serialNumber") = '';
+UPDATE "Asset" SET "status" = lower("status");
+INSERT INTO "AssetCategory" ("name", "updatedAt") SELECT DISTINCT "category", CURRENT_TIMESTAMP FROM "Asset" ON CONFLICT ("name") DO NOTHING;
+ALTER TABLE "Asset" ADD CONSTRAINT "Asset_category_fkey" FOREIGN KEY ("category") REFERENCES "AssetCategory"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Asset" ADD CONSTRAINT "Asset_status_check" CHECK ("status" IN ('available','assigned','damaged','under_repair','lost','retired'));
+ALTER TABLE "Asset" ADD CONSTRAINT "Asset_condition_check" CHECK ("condition" IN ('NEW','GOOD','FAIR','DAMAGED'));
+ALTER TABLE "AssetAssignment" ADD CONSTRAINT "Assignment_return_condition_check" CHECK ("returnCondition" IN ('NEW','GOOD','FAIR','DAMAGED'));
+CREATE UNIQUE INDEX "AssetAssignment_one_active_per_asset" ON "AssetAssignment"("assetId") WHERE "status" = 'ACTIVE';
+CREATE INDEX "Asset_status_category_idx" ON "Asset"("status", "category");
+CREATE INDEX "Asset_employeeId_idx" ON "Asset"("employeeId");
+CREATE INDEX "AssetAssignment_employeeId_status_idx" ON "AssetAssignment"("employeeId", "status");
+CREATE INDEX "AssetHistory_assetId_createdAt_idx" ON "AssetHistory"("assetId", "createdAt");

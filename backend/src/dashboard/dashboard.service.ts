@@ -12,7 +12,7 @@ export class DashboardService {
       availableAssets,
       assignedAssets,
       damagedAssets,
-      totalCategories,
+      totalCategories, byCategory, byStatus, recentAssignments, recentActivity,
     ] = await Promise.all([
       this.prisma.employee.count(),
       this.prisma.asset.count(),
@@ -26,6 +26,10 @@ export class DashboardService {
         where: { status: 'damaged' },
       }),
       this.prisma.assetCategory.count(),
+      this.prisma.asset.groupBy({by: ['category'], _count: {_all: true}}),
+      this.prisma.asset.groupBy({by: ['status'], _count: {_all: true}}),
+      this.prisma.assetAssignment.findMany({take: 5, orderBy: {assignedAt: 'desc'}, include: {asset: true, employee: true}}),
+      this.prisma.assetHistory.findMany({take: 10, orderBy: {createdAt: 'desc'}, include: {asset: true, employee: true}}),
     ]);
 
     return {
@@ -35,6 +39,9 @@ export class DashboardService {
       assignedAssets,
       damagedAssets,
       totalCategories,
+      byCategory: byCategory.map(row => ({category: row.category, count: row._count._all})),
+      byStatus: ['available','assigned','damaged','under_repair','lost','retired'].map(status => ({status, count: byStatus.find(row => row.status === status)?._count._all || 0})),
+      recentAssignments, recentActivity,
     };
   }
 }  

@@ -4,6 +4,14 @@ import { Request, Response } from 'express';
 @Catch()
 export class ProblemDetailsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
+    const code = (exception as { code?: string })?.code;
+    if (code === 'P2002' || code === 'P2003' || code === 'P2025' || code === 'P2034') {
+      const status = code === 'P2025' ? 404 : 409;
+      exception = new HttpException({ error: status === 404 ? 'Not Found' : 'Conflict', message:
+        code === 'P2002' ? 'A record with this unique code, email, serial number or active assignment already exists' :
+        code === 'P2003' ? 'This record is referenced by other records and cannot be deleted' :
+        code === 'P2034' ? 'A concurrent operation changed this record. Refresh and try again' : 'Record not found' }, status);
+    }
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();

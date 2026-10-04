@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
+import { AssignmentsService } from '../assignments/assignments.service';
+import { ReturnsService } from '../returns/returns.service';
 import { AssetService } from './asset.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -14,6 +16,9 @@ describe('AssetService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    $transaction: jest.fn((callback) => callback(mockPrisma)),
+    assetCategory: {findUnique: jest.fn().mockResolvedValue({name: 'Laptops', active: true})},
+    assetHistory: {create: jest.fn()},
     employee: {
       findUnique: jest.fn(),
     },
@@ -24,6 +29,8 @@ describe('AssetService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AssetService,
+        {provide: AssignmentsService, useValue: {create: jest.fn()}},
+        {provide: ReturnsService, useValue: {create: jest.fn()}},
         { provide: PrismaService, useValue: mockPrisma },
       ],
     }).compile();

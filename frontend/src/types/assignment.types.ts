@@ -7,6 +7,8 @@ export interface AssetAssignment {
   employeeId: number;
   assignedAt: string;
   returnedAt?: string | null;
+  returnCondition?: string | null;
+  returnNotes?: string | null;
   notes?: string | null;
   status: 'ACTIVE' | 'RETURNED';
   createdAt: string;
@@ -18,11 +20,13 @@ export interface AssetAssignment {
 export interface CreateAssignmentDto {
   assetId: number;
   employeeId: number;
+  assignedAt?: string;
   notes?: string;
 }
 
 export interface CreateReturnDto {
   assignmentId: number;
+  returnedAt?: string;
   condition: string;
   notes?: string;
 }

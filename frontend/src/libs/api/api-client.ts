@@ -48,8 +48,8 @@ class ApiClient {
         ...restOptions,
         headers: requestHeaders,
       });
-    } catch (err: any) {
-      throw new ApiError(0, `Network error: unable to connect to ${this.baseUrl}. ${err?.message || ''}`);
+    } catch (err: unknown) {
+      throw new ApiError(0, `Network error: unable to connect to ${this.baseUrl}. ${err instanceof Error ? err.message : ''}`);
     }
 
     // Handle 204 No Content
@@ -58,9 +58,9 @@ class ApiClient {
     }
 
     const contentType = response.headers.get('content-type') || '';
-    const isJson = contentType.includes('application/json');
+    const isJson = contentType.includes('application/json') || contentType.includes('application/problem+json');
 
-    let body: any = null;
+    let body: unknown = null;
     if (isJson) {
       try {
         body = await response.json();
@@ -78,17 +78,17 @@ class ApiClient {
         const message = problem.detail || problem.title || `HTTP error ${response.status}`;
         throw new ApiError(response.status, message, problem);
       }
-      throw new ApiError(response.status, body || `HTTP ${response.status} Error`);
+      throw new ApiError(response.status, typeof body === 'string' ? body : `HTTP ${response.status} Error`);
     }
 
     return body as T;
   }
 
-  public get<T>(path: string, params?: Record<string, any>, options?: RequestOptions): Promise<T> {
+  public get<T>(path: string, params?: Record<string, string | number | boolean | undefined | null>, options?: RequestOptions): Promise<T> {
     return this.request<T>(path, { method: 'GET', params, ...options });
   }
 
-  public post<T>(path: string, data?: any, options?: RequestOptions): Promise<T> {
+  public post<T>(path: string, data?: unknown, options?: RequestOptions): Promise<T> {
     return this.request<T>(path, {
       method: 'POST',
       body: data !== undefined ? JSON.stringify(data) : undefined,
@@ -96,7 +96,7 @@ class ApiClient {
     });
   }
 
-  public put<T>(path: string, data?: any, options?: RequestOptions): Promise<T> {
+  public put<T>(path: string, data?: unknown, options?: RequestOptions): Promise<T> {
     return this.request<T>(path, {
       method: 'PUT',
       body: data !== undefined ? JSON.stringify(data) : undefined,
@@ -104,7 +104,7 @@ class ApiClient {
     });
   }
 
-  public patch<T>(path: string, data?: any, options?: RequestOptions): Promise<T> {
+  public patch<T>(path: string, data?: unknown, options?: RequestOptions): Promise<T> {
     return this.request<T>(path, {
       method: 'PATCH',
       body: data !== undefined ? JSON.stringify(data) : undefined,

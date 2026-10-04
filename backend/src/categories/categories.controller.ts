@@ -1,3 +1,5 @@
+import { Query, ParseIntPipe as IdPipe } from '@nestjs/common';
+import { ListQueryDto } from '../common/dto/list-query.dto';
 import {
   Body,
   Controller,
@@ -6,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -14,6 +17,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/constants/roles.constant';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @ApiTags('Categories')
 @ApiBearerAuth('JWT-auth')
@@ -26,8 +31,8 @@ export class CategoriesController {
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'List all asset categories (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Categories retrieved successfully' })
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query() query: ListQueryDto) {
+    return this.categoriesService.findAll(query);
   }
 
   @Get(':id')
@@ -35,7 +40,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get category details by ID (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Category details returned' })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', IdPipe) id: string) {
     return this.categoriesService.findOne(Number(id));
   }
 
@@ -46,11 +51,7 @@ export class CategoriesController {
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   create(
     @Body()
-    data: {
-      name: string;
-      description?: string;
-      active?: boolean;
-    },
+    data: CreateCategoryDto,
   ) {
     return this.categoriesService.create(data);
   }
@@ -61,13 +62,22 @@ export class CategoriesController {
   @ApiResponse({ status: 200, description: 'Category updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   update(
-    @Param('id') id: string,
+    @Param('id', IdPipe) id: string,
     @Body()
-    data: {
-      name?: string;
-      description?: string;
-      active?: boolean;
-    },
+    data: UpdateCategoryDto,
+  ) {
+    return this.categoriesService.update(Number(id), data);
+  }
+
+  @Put(':id')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update an asset category (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Category updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
+  put(
+    @Param('id', IdPipe) id: string,
+    @Body()
+    data: UpdateCategoryDto,
   ) {
     return this.categoriesService.update(Number(id), data);
   }
@@ -77,7 +87,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Delete an asset category (Admin only)' })
   @ApiResponse({ status: 200, description: 'Category deleted successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', IdPipe) id: string) {
     return this.categoriesService.remove(Number(id));
   }
 }

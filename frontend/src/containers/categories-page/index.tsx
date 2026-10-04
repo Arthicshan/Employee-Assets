@@ -178,6 +178,7 @@ export const CategoriesPageContainer: React.FC = () => {
             />
           </div>
 
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={formData.active ?? true} onChange={e => setFormData({...formData, active: e.target.checked})} />Active category</label>
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Button
               type="button"
@@ -203,7 +204,7 @@ export const CategoriesPageContainer: React.FC = () => {
         onClose={() => setDeletingCategory(null)}
         onConfirm={handleDelete}
         title="Delete Category"
-        message={`Are you sure you want to delete "${deletingCategory?.name}"? Assets under this category may be affected.`}
+        message={`Are you sure you want to delete "${deletingCategory?.name}"? Categories used by assets cannot be deleted. Deactivate the category instead.`}
         confirmLabel="Delete Category"
         isLoading={isSubmitting}
       />

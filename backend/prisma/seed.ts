@@ -383,6 +383,7 @@ async function main() {
         model: item.model,
         serialNumber: item.serialNumber,
         status: item.status,
+        condition: item.status === "damaged" ? "DAMAGED" : "GOOD",
         purchaseDate: item.purchaseDate,
         employeeId: assignedEmp ? assignedEmp.id : null,
       },
@@ -435,6 +436,8 @@ async function main() {
             assignedAt: assignedTime,
             returnedAt: returnedTime,
             status: 'RETURNED',
+            returnCondition: 'DAMAGED',
+            returnNotes: item.damagedNotes,
             notes: item.damagedNotes || 'Returned in damaged state',
           },
         });

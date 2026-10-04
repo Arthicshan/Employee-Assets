@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found or inactive');
     }
 
-    const employeeId = payload.employeeId ?? user.employeeId ?? user.employee?.id ?? undefined;
+    const employeeId = user.employeeId ?? user.employee?.id ?? undefined;
 
     return {
       id: user.id,

@@ -1,3 +1,5 @@
+import { ListQueryDto } from '../common/dto/list-query.dto';
+import { ParseIntPipe } from '@nestjs/common';
 import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AssignmentsService } from './assignments.service';
@@ -20,20 +22,8 @@ export class AssignmentsController {
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'List asset assignments (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Assignments retrieved successfully' })
-  findAll(
-    @Query('status') status?: string,
-    @Query('assetId') assetId?: string,
-    @Query('employeeId') employeeId?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.assignmentsService.findAll({
-      status,
-      assetId: assetId ? Number(assetId) : undefined,
-      employeeId: employeeId ? Number(employeeId) : undefined,
-      page: page ? Number(page) : undefined,
-      limit: limit ? Number(limit) : undefined,
-    });
+  findAll(@Query() query: ListQueryDto) {
+    return this.assignmentsService.findAll(query);
   }
 
   @Get(':id')
@@ -41,7 +31,7 @@ export class AssignmentsController {
   @ApiOperation({ summary: 'Get assignment details by ID (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Assignment details returned' })
   @ApiResponse({ status: 404, description: 'Assignment not found' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.assignmentsService.findOne(Number(id));
   }
 

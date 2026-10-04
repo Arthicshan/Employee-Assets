@@ -1,4 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Query, ParseIntPipe as IdPipe } from '@nestjs/common';
+import { ListQueryDto } from '../common/dto/list-query.dto';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -19,8 +21,8 @@ export class EmployeeController {
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'List all employee records (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Employees retrieved successfully' })
-  findAll() {
-    return this.employeeService.findAll();
+  findAll(@Query() query: ListQueryDto) {
+    return this.employeeService.findAll(query);
   }
 
   @Get(':id')
@@ -28,7 +30,7 @@ export class EmployeeController {
   @ApiOperation({ summary: 'Get employee details by ID (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Employee details returned' })
   @ApiResponse({ status: 404, description: 'Employee not found' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', IdPipe) id: string) {
     return this.employeeService.findOne(Number(id));
   }
 
@@ -46,7 +48,16 @@ export class EmployeeController {
   @ApiOperation({ summary: 'Update employee record (Admin only)' })
   @ApiResponse({ status: 200, description: 'Employee updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  update(@Param('id') id: string, @Body() data: UpdateEmployeeDto) {
+  update(@Param('id', IdPipe) id: string, @Body() data: UpdateEmployeeDto) {
+    return this.employeeService.update(Number(id), data);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Partially update employee record (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Employee updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
+  patch(@Param('id', IdPipe) id: string, @Body() data: UpdateEmployeeDto) {
     return this.employeeService.update(Number(id), data);
   }
 
@@ -55,7 +66,7 @@ export class EmployeeController {
   @ApiOperation({ summary: 'Delete an employee record (Admin only)' })
   @ApiResponse({ status: 200, description: 'Employee deleted successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', IdPipe) id: string) {
     return this.employeeService.remove(Number(id));
   }
 }

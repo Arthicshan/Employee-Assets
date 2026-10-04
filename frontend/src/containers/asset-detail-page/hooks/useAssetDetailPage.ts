@@ -21,15 +21,16 @@ export function useAssetDetailPage(id: number) {
       ]);
       setAsset(assetData);
       setHistory(historyData);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load asset details');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to load asset details');
     } finally {
       setIsLoading(false);
     }
   }, [id]);
 
   useEffect(() => {
-    fetchAssetAndHistory();
+    const timer = setTimeout(() => { void fetchAssetAndHistory(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchAssetAndHistory]);
 
   return {

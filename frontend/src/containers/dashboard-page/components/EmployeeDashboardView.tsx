@@ -30,21 +30,23 @@ export const EmployeeDashboardView: React.FC = () => {
     try {
       const res = await employeePortalService.getDashboard();
       setData(res);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load employee portal details');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to load employee portal details');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDashboard();
+    const timer = setTimeout(() => { void fetchDashboard(); }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const employee = data?.employee || data?.profile;
-  const metrics = (data?.summary as any) || (data?.metrics as any);
+  const assignedCount = data?.summary?.assignedAssetsCount ?? data?.metrics?.currentlyAssignedCount ?? data?.assignedAssets.length ?? 0;
+  const assignmentCount = data?.summary?.totalAssignmentsCount ?? data?.metrics?.totalAssignmentsCount ?? data?.recentAssignments?.length ?? 0;
   const assignedAssets = data?.assignedAssets || [];
-  const assignments = data?.recentAssignments || data?.assignments || [];
+  const assignments = data?.assignments || data?.recentAssignments || [];
 
 
   return (
@@ -52,7 +54,7 @@ export const EmployeeDashboardView: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               Welcome back, {employee ? `${employee.firstName} ${employee.lastName}` : 'Employee'}
             </h1>
@@ -61,20 +63,20 @@ export const EmployeeDashboardView: React.FC = () => {
               Active Member
             </span>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Employee Self-Service Portal &bull; Company Asset Management
           </p>
-          <div className="flex items-center gap-4 mt-3 text-xs text-slate-600">
+          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-600">
             <div className="flex items-center gap-1.5">
-              <Building className="w-3.5 h-3.5 text-slate-400" />
+              <Building className="w-3.5 h-3.5 text-slate-600" />
               <span>Department: <strong className="text-slate-800">{employee?.department || 'Operations'}</strong></span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+              <Briefcase className="w-3.5 h-3.5 text-slate-600" />
               <span>Position: <strong className="text-slate-800">{employee?.position || 'Staff'}</strong></span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400">ID:</span>
+              <span className="text-slate-600">ID:</span>
               <code className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded">{employee?.employeeNo}</code>
             </div>
           </div>
@@ -100,13 +102,13 @@ export const EmployeeDashboardView: React.FC = () => {
             <Boxes className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-medium text-slate-600 uppercase tracking-wider">
               Currently Assigned Assets
             </span>
             <div className="text-2xl font-bold text-slate-900 mt-0.5">
-              {metrics?.assignedAssetsCount ?? metrics?.currentlyAssignedCount ?? assignedAssets.length}
+              {assignedCount}
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">In your custody</p>
+            <p className="text-xs text-slate-600 mt-0.5">In your custody</p>
           </div>
         </div>
 
@@ -115,13 +117,13 @@ export const EmployeeDashboardView: React.FC = () => {
             <ClipboardList className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-medium text-slate-600 uppercase tracking-wider">
               Total Assignment History
             </span>
             <div className="text-2xl font-bold text-slate-900 mt-0.5">
-              {metrics?.totalAssignmentsCount ?? assignments.length}
+              {assignmentCount}
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">All-time asset records</p>
+            <p className="text-xs text-slate-600 mt-0.5">All-time asset records</p>
           </div>
         </div>
 
@@ -131,7 +133,7 @@ export const EmployeeDashboardView: React.FC = () => {
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-medium text-slate-600 uppercase tracking-wider">
               Profile Status
             </span>
             <div className="mt-1">
@@ -139,7 +141,7 @@ export const EmployeeDashboardView: React.FC = () => {
                 Active Employee
               </Badge>
             </div>
-            <p className="text-xs text-slate-400 mt-1">Eligible for equipment custody</p>
+            <p className="text-xs text-slate-600 mt-1">Eligible for equipment custody</p>
           </div>
         </div>
       </div>
@@ -152,7 +154,7 @@ export const EmployeeDashboardView: React.FC = () => {
               <Boxes className="w-5 h-5 text-blue-600" />
               My Assigned Assets
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               Equipment currently assigned to you for corporate work
             </p>
           </div>
@@ -163,18 +165,18 @@ export const EmployeeDashboardView: React.FC = () => {
 
         {assignedAssets.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center mb-3">
+            <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-600 mx-auto flex items-center justify-center mb-3">
               <Laptop className="w-7 h-7" />
             </div>
             <h3 className="text-base font-semibold text-slate-800">No assets currently assigned</h3>
-            <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto">
               No assets currently assigned. Please contact your manager or IT administrator if you require equipment.
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
-              <thead className="bg-slate-50/80 border-b border-slate-200 uppercase font-semibold text-slate-500 tracking-wider">
+              <thead className="bg-slate-50/80 border-b border-slate-200 uppercase font-semibold text-slate-600 tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Asset Code / Tag</th>
                   <th className="px-5 py-3.5">Asset Name</th>
@@ -201,7 +203,7 @@ export const EmployeeDashboardView: React.FC = () => {
                     <td className="px-5 py-4 text-slate-600">
                       {asset.brand} &bull; {asset.model}
                     </td>
-                    <td className="px-5 py-4 font-mono text-slate-500">
+                    <td className="px-5 py-4 font-mono text-slate-600">
                       {asset.serialNumber || '—'}
                     </td>
                     <td className="px-5 py-4">
@@ -223,7 +225,7 @@ export const EmployeeDashboardView: React.FC = () => {
               <Clock className="w-5 h-5 text-indigo-600" />
               Assignment History
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-600 mt-0.5">
               Complete chronological audit log of all equipment assigned to you
             </p>
           </div>
@@ -233,13 +235,13 @@ export const EmployeeDashboardView: React.FC = () => {
         </div>
 
         {assignments.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-xs">
+          <div className="p-8 text-center text-slate-600 text-xs">
             No previous assignment records found.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
-              <thead className="bg-slate-50/80 border-b border-slate-200 uppercase font-semibold text-slate-500 tracking-wider">
+              <thead className="bg-slate-50/80 border-b border-slate-200 uppercase font-semibold text-slate-600 tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Asset</th>
                   <th className="px-5 py-3.5">Assigned Date</th>
@@ -253,12 +255,12 @@ export const EmployeeDashboardView: React.FC = () => {
                   <tr key={item.id} className="hover:bg-slate-50/50">
                     <td className="px-5 py-4 font-semibold text-slate-900">
                       {item.asset?.name || `Asset #${item.assetId}`}
-                      <span className="text-slate-400 font-mono font-normal ml-1.5">
+                      <span className="text-slate-600 font-mono font-normal ml-1.5">
                         ({item.asset?.assetTag})
                       </span>
                     </td>
                     <td className="px-5 py-4 flex items-center gap-1.5 text-slate-700">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <Calendar className="w-3.5 h-3.5 text-slate-600" />
                       {new Date(item.assignedAt).toLocaleDateString()}
                     </td>
                     <td className="px-5 py-4">
@@ -276,7 +278,7 @@ export const EmployeeDashboardView: React.FC = () => {
                     <td className="px-5 py-4">
                       <StatusBadge status={item.status} />
                     </td>
-                    <td className="px-5 py-4 text-slate-500 italic max-w-xs truncate">
+                    <td className="px-5 py-4 text-slate-600 italic max-w-xs truncate">
                       {item.notes || '—'}
                     </td>
                   </tr>

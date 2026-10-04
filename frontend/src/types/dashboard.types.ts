@@ -13,6 +13,7 @@ export interface DashboardSummary {
   assignedAssets: number;
   damagedAssets: number;
   totalCategories: number;
+  byStatus: {status: string; count: number}[];
   byCategory: CategoryBreakdown[];
   recentAssignments: AssetAssignment[];
   recentActivity: AssetHistory[];

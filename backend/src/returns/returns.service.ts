@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReturnDto } from './dto/create-return.dto';
 
@@ -11,7 +12,8 @@ export class ReturnsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: CreateReturnDto) {
-    const assignment = await this.prisma.assetAssignment.findUnique({
+    return this.prisma.$transaction(async (tx) => {
+    const assignment = await tx.assetAssignment.findUnique({
       where: {
         id: data.assignmentId,
       },
@@ -29,7 +31,10 @@ export class ReturnsService {
       );
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const returnedAt = data.returnedAt ? new Date(data.returnedAt) : new Date();
+    if (returnedAt < assignment.assignedAt) throw new BadRequestException('Return date cannot precede assignment date');
+    const asset = await tx.asset.findUnique({where: {id: assignment.assetId}});
+    const nextStatus = asset?.status === 'lost' ? 'lost' : data.condition === 'DAMAGED' ? 'damaged' : 'available';
       // 1. Mark assignment as returned
       const updatedAssignment = await tx.assetAssignment.update({
         where: {
@@ -37,8 +42,9 @@ export class ReturnsService {
         },
         data: {
           status: 'RETURNED',
-          returnedAt: new Date(),
-          notes: data.notes ?? assignment.notes,
+          returnedAt,
+          returnCondition: data.condition,
+          returnNotes: data.notes,
         },
       });
 
@@ -48,10 +54,8 @@ export class ReturnsService {
           id: assignment.assetId,
         },
         data: {
-          status:
-            data.condition.toUpperCase() === 'DAMAGED'
-              ? 'damaged'
-              : 'available',
+          status: nextStatus,
+          condition: data.condition,
           employeeId: null,
         },
       });
@@ -62,11 +66,13 @@ export class ReturnsService {
           assetId: assignment.assetId,
           employeeId: assignment.employeeId,
           action: 'RETURNED',
+          previousStatus: asset?.status || 'assigned',
+          newStatus: nextStatus,
           notes: data.notes,
         },
       });
 
       return updatedAssignment;
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 }

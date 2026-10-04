@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Pagination } from '../Pagination';
 
 export interface Column<T> {
   header: string;
@@ -14,6 +15,8 @@ interface TableProps<T> {
   keyExtractor: (item: T) => string | number;
   isLoading?: boolean;
   emptyMessage?: string;
+  paginate?: boolean;
+  sortable?: boolean;
   onRowClick?: (item: T) => void;
 }
 
@@ -24,7 +27,20 @@ export function Table<T>({
   isLoading = false,
   emptyMessage = 'No records found.',
   onRowClick,
+  paginate = true,
+  sortable = true,
 }: TableProps<T>) {
+  const [pageState, setPage] = useState({page: 1, data});
+  const [sort, setSort] = useState('');
+  const [descending, setDescending] = useState(false);
+  const page = pageState.data === data ? pageState.page : 1;
+  const fields = data.length ? Object.keys(data[0] as object).filter(key => !['id','employeeId','assetId','passwordHash'].includes(key) && ['string','number','boolean'].includes(typeof (data[0] as Record<string, unknown>)[key])) : [];
+  const ordered = sort ? [...data].sort((a,b) => {
+    const av = (a as Record<string, unknown>)[sort], bv = (b as Record<string, unknown>)[sort];
+    const result = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av ?? '').localeCompare(String(bv ?? ''));
+    return descending ? -result : result;
+  }) : data;
+  const visible = paginate ? ordered.slice((page - 1) * 20, page * 20) : ordered;
   if (isLoading) {
     return (
       <div className="w-full bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
@@ -41,6 +57,10 @@ export function Table<T>({
 
   return (
     <div className="w-full bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+      {sortable && fields.length > 0 && <div className="flex gap-3 items-center px-5 py-3 border-b border-slate-100 text-xs">
+        <label>Sort by <select aria-label="Sort by" value={sort} onChange={e => {setSort(e.target.value); setPage({page: 1, data});}} className="ml-2 border rounded p-1"><option value="">Default order</option>{fields.map(field => <option key={field} value={field}>{field.replace(/([A-Z])/g, ' $1')}</option>)}</select></label>
+        <button type="button" onClick={() => setDescending(!descending)}>{descending ? 'Descending' : 'Ascending'}</button>
+      </div>}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">
           <thead className="bg-slate-50/80 border-b border-slate-200 text-xs uppercase font-semibold text-slate-500 tracking-wider">
@@ -60,7 +80,7 @@ export function Table<T>({
                 </td>
               </tr>
             ) : (
-              data.map((item) => (
+              visible.map((item) => (
                 <tr
                   key={keyExtractor(item)}
                   onClick={() => onRowClick && onRowClick(item)}
@@ -83,6 +103,7 @@ export function Table<T>({
           </tbody>
         </table>
       </div>
+      {paginate && <Pagination meta={{total: data.length, page, limit: 20, totalPages: Math.max(1, Math.ceil(data.length / 20))}} onPageChange={next => setPage({page: next, data})} />}
     </div>
   );
 }

@@ -57,6 +57,12 @@ export const AssetDetailPageContainer: React.FC<AssetDetailPageProps> = ({ id })
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
+      <div className="bg-white rounded-xl border p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+        <div><p className="text-slate-500">Condition</p><p>{asset.condition}</p></div>
+        <div><p className="text-slate-500">Purchase Price</p><p>{asset.purchasePrice ?? 'Not recorded'}</p></div>
+        <div><p className="text-slate-500">Warranty Expiry</p><p>{asset.warrantyExpiryDate ? new Date(asset.warrantyExpiryDate).toLocaleDateString() : 'Not recorded'}</p></div>
+        <div><p className="text-slate-500">Notes</p><p>{asset.notes || '-'}</p></div>
+      </div>
       {/* Top Navigation */}
       <div className="flex items-center justify-between">
         <Link
@@ -234,9 +240,10 @@ export const AssetDetailPageContainer: React.FC<AssetDetailPageProps> = ({ id })
                       )}
                     </p>
 
+                    {event.previousStatus && event.newStatus && <p className="text-xs text-slate-500 mt-1">{event.previousStatus} → {event.newStatus}</p>}
                     {event.notes && (
                       <p className="text-xs text-slate-500 mt-2 bg-white p-2.5 rounded-lg border border-slate-100 italic">
-                        "{event.notes}"
+                        &quot;{event.notes}&quot;
                       </p>
                     )}
                   </div>

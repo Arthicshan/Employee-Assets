@@ -22,15 +22,16 @@ export function useEmployeeDetailPage(id: number) {
       ]);
       setEmployee(empData);
       setAssignments(assignmentsData.data || []);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load employee details');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to load employee details');
     } finally {
       setIsLoading(false);
     }
   }, [id]);
 
   useEffect(() => {
-    fetchEmployeeData();
+    const timer = setTimeout(() => { void fetchEmployeeData(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchEmployeeData]);
 
   return {

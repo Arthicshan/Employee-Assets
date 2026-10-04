@@ -7,7 +7,7 @@ import { StatusBadge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import {
   ArrowLeft,
-  Users,
+
   Mail,
   Building,
   Briefcase,

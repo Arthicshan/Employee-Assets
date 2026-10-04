@@ -279,7 +279,7 @@ export const UsersPageContainer: React.FC = () => {
                 { label: 'EMPLOYEE — Self-Service Portal Access', value: 'EMPLOYEE' },
               ]}
               value={formData.role || 'EMPLOYEE'}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'MANAGER' | 'EMPLOYEE' })}
             />
           </div>
 

@@ -28,12 +28,14 @@ export const sessionManager = {
   setUser(user: UserProfile): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+    window.dispatchEvent(new Event("assetflow-session"));
   },
 
   clear(): void {
     if (typeof window === 'undefined') return;
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    window.dispatchEvent(new Event("assetflow-session"));
   },
 
   isAuthenticated(): boolean {

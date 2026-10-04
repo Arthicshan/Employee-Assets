@@ -2,9 +2,11 @@
 
 import React from 'react';
 import { useAssignmentsPage } from './hooks/useAssignmentsPage';
+import { Pagination } from '@/components/Pagination';
 import { Table, Column } from '@/components/Table';
 import { Button } from '@/components/Button';
 import { Modal } from '@/components/Modal';
+import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { StatusBadge } from '@/components/Badge';
 import {
@@ -13,14 +15,13 @@ import {
   RotateCcw,
   AlertCircle,
   Boxes,
-  User,
   ShieldAlert,
 } from 'lucide-react';
 import { AssetAssignment } from '@/types';
 
-export const AssignmentsPageContainer: React.FC = () => {
+export const AssignmentsPageContainer: React.FC<{returnsView?: boolean}> = ({returnsView = false}) => {
   const {
-    assignments,
+    assignments, meta, setPage, search, setSearch, sortBy, setSortBy, sortOrder, setSortOrder,
     availableAssets,
     employees,
     isLoading,
@@ -44,6 +45,7 @@ export const AssignmentsPageContainer: React.FC = () => {
   } = useAssignmentsPage();
 
   const columns: Column<AssetAssignment>[] = [
+    {header: 'Return Inspection', accessor: row => row.returnCondition ? <span>{row.returnCondition}{row.returnNotes && <span className="block text-xs text-slate-500">{row.returnNotes}</span>}</span> : '-'},
     {
       header: 'Assigned Equipment',
       accessor: (row) => (
@@ -134,16 +136,16 @@ export const AssignmentsPageContainer: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
             <ClipboardList className="w-6 h-6 text-indigo-600" />
-            Asset Assignments &amp; Returns
+            {returnsView ? "Asset Returns" : "Asset Assignments & Returns"}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Assign available equipment to staff, track active custody, and process returns
+            {returnsView ? "Receive assigned equipment and review return inspections" : "Assign available equipment to staff, track active custody, and process returns"}
           </p>
         </div>
-        <Button variant="primary" onClick={openAssignModal}>
+        {!returnsView && <Button variant="primary" onClick={openAssignModal}>
           <Plus className="w-4 h-4 mr-1.5" />
           Assign Equipment
-        </Button>
+        </Button>}
       </div>
 
       {error && (
@@ -162,6 +164,11 @@ export const AssignmentsPageContainer: React.FC = () => {
         </div>
       )}
 
+      <div className="flex flex-wrap gap-3">
+        <Input aria-label="Search assignments" placeholder="Search equipment or employee..." value={search} onChange={e => setSearch(e.target.value)} />
+        <Select aria-label="Sort assignments" value={sortBy} onChange={e => setSortBy(e.target.value)} options={[{label:'Created Date',value:'createdAt'},{label:'Assigned Date',value:'assignedAt'},{label:'Return Date',value:'returnedAt'},{label:'Status',value:'status'}]} />
+        <Select aria-label="Sort direction" value={sortOrder} onChange={e => setSortOrder(e.target.value as 'asc' | 'desc')} options={[{label:'Descending',value:'desc'},{label:'Ascending',value:'asc'}]} />
+      </div>
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
         {(['ACTIVE', 'RETURNED', 'ALL'] as const).map((tab) => (
@@ -186,11 +193,15 @@ export const AssignmentsPageContainer: React.FC = () => {
       {/* Table */}
       <Table
         columns={columns}
+        paginate={false}
+        sortable={false}
         data={assignments}
         keyExtractor={(item) => item.id}
         isLoading={isLoading}
         emptyMessage={`No ${statusFilter === 'ALL' ? '' : statusFilter.toLowerCase()} assignments found.`}
       />
+
+      <Pagination meta={meta} onPageChange={setPage} />
 
       {/* Assign Equipment Modal */}
       <Modal
@@ -207,6 +218,7 @@ export const AssignmentsPageContainer: React.FC = () => {
             </span>
           </div>
 
+          <Input label="Assigned Date (Optional)" type="datetime-local" value={assignForm.assignedAt || ''} onChange={e => setAssignForm({...assignForm, assignedAt: e.target.value})} />
           <Select
             label="Select Available Asset"
             required
@@ -291,6 +303,7 @@ export const AssignmentsPageContainer: React.FC = () => {
             </div>
           </div>
 
+          <Input label="Returned Date (Optional)" type="datetime-local" value={returnForm.returnedAt || ''} onChange={e => setReturnForm({...returnForm, returnedAt: e.target.value})} />
           <Select
             label="Asset Return Condition"
             required

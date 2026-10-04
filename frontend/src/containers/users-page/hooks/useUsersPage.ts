@@ -38,15 +38,16 @@ export function useUsersPage() {
     try {
       const data = await usersService.getUsers();
       setUsers(data);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to fetch system users');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch system users');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchUsers();
+    const timer = setTimeout(() => { void fetchUsers(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchUsers]);
 
   const openCreateModal = () => {
@@ -96,12 +97,12 @@ export function useUsersPage() {
         setIsCreateOpen(false);
       }
       await fetchUsers();
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError(err?.message || 'Failed to save user account');
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to save user account');
       }
     } finally {
       setIsSubmitting(false);
@@ -112,8 +113,8 @@ export function useUsersPage() {
     try {
       await usersService.toggleStatus(user.id);
       await fetchUsers();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to update user status');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to update user status');
     }
   };
 
@@ -124,8 +125,8 @@ export function useUsersPage() {
       await usersService.deleteUser(deletingUser.id);
       setDeletingUser(null);
       await fetchUsers();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to delete user account');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete user account');
     } finally {
       setIsSubmitting(false);
     }

@@ -83,7 +83,7 @@ export class EmployeePortalService {
   async getMyDashboard(userId: number, employeeId?: number) {
     const employee = await this.resolveEmployee(userId, employeeId);
 
-    const [assignedAssets, totalAssignments, recentAssignments] = await Promise.all([
+    const [assignedAssets, totalAssignments, recentAssignments, assignments, history] = await Promise.all([
       this.prisma.asset.findMany({
         where: {
           employeeId: employee.id,
@@ -106,6 +106,8 @@ export class EmployeePortalService {
         orderBy: { assignedAt: 'desc' },
         take: 5,
       }),
+      this.prisma.assetAssignment.findMany({where: {employeeId: employee.id}, include: {asset: true}, orderBy: {assignedAt: 'desc'}}),
+      this.prisma.assetHistory.findMany({where: {employeeId: employee.id}, include: {asset: true}, orderBy: {createdAt: 'desc'}}),
     ]);
 
     return {
@@ -123,7 +125,7 @@ export class EmployeePortalService {
         totalAssignmentsCount: totalAssignments,
       },
       assignedAssets,
-      recentAssignments,
+      recentAssignments, assignments, history,
     };
   }
 }

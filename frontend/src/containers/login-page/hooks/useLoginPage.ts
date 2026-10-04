@@ -24,14 +24,14 @@ export function useLoginPage() {
       if (response.accessToken) {
         router.push('/dashboard');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors && err.validationErrors.length > 0) {
           setValidationErrors(err.validationErrors);
         }
       } else {
-        setError(err?.message || 'Login failed. Please check your credentials.');
+        setError((err instanceof Error ? err.message : undefined) || 'Login failed. Please check your credentials.');
       }
     } finally {
       setIsLoading(false);

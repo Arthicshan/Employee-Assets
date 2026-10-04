@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { assignmentsService } from '@/services/assignments/assignments.service';
 import { returnsService } from '@/services/returns/returns.service';
 import { assetsService } from '@/services/assets/assets.service';
@@ -9,6 +9,9 @@ import { AssetAssignment, Asset, Employee, CreateAssignmentDto, CreateReturnDto,
 import { ApiError } from '@/libs/api/api-error';
 
 export function useAssignmentsPage() {
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [assignments, setAssignments] = useState<AssetAssignment[]>([]);
   const [meta, setMeta] = useState<PaginatedMeta>({ total: 0, page: 1, limit: 50, totalPages: 1 });
   const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
@@ -37,23 +40,27 @@ export function useAssignmentsPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const requestVersion = useRef(0);
   const fetchAssignments = useCallback(async () => {
+    const version = ++requestVersion.current;
     setIsLoading(true);
     setError(null);
     try {
       const response = await assignmentsService.getAssignments({
+        search: search || undefined, sortBy, sortOrder,
         status: statusFilter === 'ALL' ? undefined : statusFilter,
         page: meta.page,
         limit: meta.limit,
       });
+      if (version !== requestVersion.current) return;
       setAssignments(response.data || []);
       if (response.meta) setMeta(response.meta);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to fetch assignments');
+    } catch (err: unknown) {
+      if (version === requestVersion.current) setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch assignments');
     } finally {
-      setIsLoading(false);
+      if (version === requestVersion.current) setIsLoading(false);
     }
-  }, [statusFilter, meta.page, meta.limit]);
+  }, [statusFilter, meta.page, meta.limit, search, sortBy, sortOrder]);
 
   const loadResources = useCallback(async () => {
     try {
@@ -70,11 +77,13 @@ export function useAssignmentsPage() {
 
 
   useEffect(() => {
-    fetchAssignments();
+    const timer = setTimeout(() => { void fetchAssignments(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchAssignments]);
 
   useEffect(() => {
-    loadResources();
+    const timer = setTimeout(() => { void loadResources(); }, 0);
+    return () => clearTimeout(timer);
   }, [loadResources]);
 
   const openAssignModal = () => {
@@ -103,15 +112,16 @@ export function useAssignmentsPage() {
         assetId: Number(assignForm.assetId),
         employeeId: Number(assignForm.employeeId),
         notes: assignForm.notes,
+        assignedAt: assignForm.assignedAt ? new Date(assignForm.assignedAt).toISOString() : undefined,
       });
       setIsAssignOpen(false);
       await Promise.all([fetchAssignments(), loadResources()]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError(err?.message || 'Failed to create assignment');
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to create assignment');
       }
     } finally {
       setIsSubmitting(false);
@@ -141,15 +151,16 @@ export function useAssignmentsPage() {
         assignmentId: returnTarget.id,
         condition: returnForm.condition,
         notes: returnForm.notes,
+        returnedAt: returnForm.returnedAt ? new Date(returnForm.returnedAt).toISOString() : undefined,
       });
       setReturnTarget(null);
       await Promise.all([fetchAssignments(), loadResources()]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError(err?.message || 'Failed to process return');
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to process return');
       }
     } finally {
       setIsSubmitting(false);
@@ -158,6 +169,9 @@ export function useAssignmentsPage() {
 
   return {
     assignments,
+    search, setSearch: (value: string) => {setSearch(value); setMeta(current => ({...current, page:1}));},
+    sortBy, setSortBy: (value: string) => {setSortBy(value); setMeta(current => ({...current, page:1}));},
+    sortOrder, setSortOrder: (value: 'asc' | 'desc') => {setSortOrder(value); setMeta(current => ({...current, page:1}));},
     meta,
     availableAssets,
     employees,
@@ -165,7 +179,8 @@ export function useAssignmentsPage() {
     error,
     validationErrors,
     statusFilter,
-    setStatusFilter,
+    setStatusFilter: (status: 'ALL' | 'ACTIVE' | 'RETURNED') => {setStatusFilter(status); setMeta(current => ({...current, page: 1}));},
+    setPage: (page: number) => setMeta(current => ({...current, page})),
     isAssignOpen,
     setIsAssignOpen,
     assignForm,

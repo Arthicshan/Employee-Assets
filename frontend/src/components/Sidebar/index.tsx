@@ -39,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
         { label: 'Assets', href: '/assets', icon: Boxes },
         { label: 'Employees', href: '/employees', icon: Users },
         { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+      { label: 'Returns', href: '/returns', icon: ClipboardList },
       ];
     }
     return [
@@ -47,6 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
       { label: 'Categories', href: '/categories', icon: Layers },
       { label: 'Employees', href: '/employees', icon: Users },
       { label: 'Assignments', href: '/assignments', icon: ClipboardList },
+      { label: 'Returns', href: '/returns', icon: ClipboardList },
       { label: 'Users', href: '/users', icon: UserCheck },
     ];
   };
@@ -54,20 +56,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
   const navItems = getNavItems();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-slate-900 text-white border-r border-slate-800 shrink-0">
+    <aside className="hidden md:flex flex-col h-full min-h-0 w-52 bg-slate-900 text-white border-r border-slate-800 shrink-0">
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 gap-3 border-b border-slate-800">
+      <div className="h-14 shrink-0 flex items-center px-4 gap-3 border-b border-slate-800">
         <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-md">
           AF
         </div>
         <div>
           <h1 className="font-bold text-base leading-tight">AssetFlow</h1>
-          <span className="text-[11px] text-slate-400">Inventory Management</span>
+          <span className="text-[11px] text-slate-300">Inventory Management</span>
         </div>
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+      <nav className="flex-1 min-h-0 px-3 py-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`));
@@ -75,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-300 hover:bg-slate-800 hover:text-white'
@@ -90,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
 
 
       {/* User profile footer */}
-      <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+      <div className="p-3 shrink-0 border-t border-slate-800 bg-slate-900/50">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 border border-slate-700">
             <User className="w-5 h-5" />
@@ -101,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
             </p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span className="text-[11px] text-slate-400 truncate">{currentUser?.email}</span>
+              <span className="text-[11px] text-slate-300 truncate">{currentUser?.email}</span>
             </div>
           </div>
         </div>
@@ -122,7 +124,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
           <button
             onClick={onLogout}
             title="Sign Out"
-            className="text-slate-400 hover:text-rose-400 p-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer"
+            className="text-slate-300 hover:text-rose-400 p-1.5 rounded-md hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>

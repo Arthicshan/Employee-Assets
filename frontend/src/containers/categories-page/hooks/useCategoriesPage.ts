@@ -21,6 +21,7 @@ export function useCategoriesPage() {
   const [formData, setFormData] = useState<CreateCategoryDto>({
     name: '',
     description: '',
+    active: true,
   });
 
   const fetchCategories = useCallback(async () => {
@@ -29,19 +30,20 @@ export function useCategoriesPage() {
     try {
       const data = await categoriesService.getCategories();
       setCategories(data);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to fetch categories');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch categories');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchCategories();
+    const timer = setTimeout(() => { void fetchCategories(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchCategories]);
 
   const openCreateModal = () => {
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '', description: '', active: true });
     setError(null);
     setValidationErrors([]);
     setIsCreateOpen(true);
@@ -49,7 +51,7 @@ export function useCategoriesPage() {
 
   const openEditModal = (cat: AssetCategory) => {
     setEditingCategory(cat);
-    setFormData({ name: cat.name, description: cat.description || '' });
+    setFormData({ name: cat.name, description: cat.description || '', active: cat.active });
     setError(null);
     setValidationErrors([]);
   };
@@ -69,12 +71,12 @@ export function useCategoriesPage() {
         setIsCreateOpen(false);
       }
       await fetchCategories();
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError(err?.message || 'Failed to save category');
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to save category');
       }
     } finally {
       setIsSubmitting(false);
@@ -88,8 +90,8 @@ export function useCategoriesPage() {
       await categoriesService.deleteCategory(deletingCategory.id);
       setDeletingCategory(null);
       await fetchCategories();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to delete category');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete category');
     } finally {
       setIsSubmitting(false);
     }

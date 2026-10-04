@@ -1,3 +1,5 @@
+import { ListQueryDto } from '../common/dto/list-query.dto';
+import { listOptions, listResponse } from '../common/list-query';
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -8,8 +10,13 @@ import * as bcrypt from 'bcryptjs';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.user.findMany({
+  async findAll(query: ListQueryDto = {}) {
+    const searchWhere = query.search ? { OR: ["email", "firstName", "lastName", "position", "role"].map(field => ({[field]: {contains: query.search, mode: 'insensitive' as const}})) } : {};
+    const status = query.status?.toUpperCase();
+    if (status && !['ACTIVE','INACTIVE'].includes(status)) throw new BadRequestException('Status must be ACTIVE or INACTIVE');
+    const where = {...searchWhere, ...(status && {isActive: status === 'ACTIVE'}), ...(query.role && {role: query.role})};
+    const data = await this.prisma.user.findMany({
+      where,
       select: {
         id: true,
         email: true,
@@ -21,8 +28,9 @@ export class UsersService {
         createdAt: true,
         updatedAt: true,
       },
-      orderBy: { id: 'asc' },
+      ...listOptions(query, ["id", "createdAt", "email", "firstName", "lastName", "position", "role"]),
     });
+    return listResponse(data, query.page || query.limit ? await this.prisma.user.count({where}) : data.length, query);
   }
 
   async findOne(id: number) {
@@ -155,8 +163,7 @@ export class UsersService {
 
     await this.findOne(id);
 
-    return this.prisma.user.delete({
-      where: { id },
-    });
+    await this.prisma.user.delete({ where: { id } });
+    return { id, deleted: true };
   }
 }

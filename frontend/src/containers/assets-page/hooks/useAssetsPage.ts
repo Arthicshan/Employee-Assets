@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { employeesService } from '@/services/employees/employees.service';
+import { Employee } from '@/types';
 import { assetsService } from '@/services/assets/assets.service';
 import { categoriesService } from '@/services/categories/categories.service';
-import { Asset, AssetCategory, CreateAssetDto, UpdateAssetDto } from '@/types';
+import { Asset, AssetCategory, CreateAssetDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
 
 export function useAssetsPage() {
+  const searchParams = useSearchParams();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [categories, setCategories] = useState<AssetCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -14,9 +18,11 @@ export function useAssetsPage() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Filters
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employeeFilter, setEmployeeFilter] = useState('');
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(searchParams.get('status') ?? '');
+  const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') ?? '');
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -34,31 +40,39 @@ export function useAssetsPage() {
     serialNumber: '',
     status: 'available',
     purchaseDate: '',
+    condition: 'GOOD',
+    warrantyExpiryDate: '',
+    notes: '',
   };
   const [formData, setFormData] = useState<CreateAssetDto>(initialForm);
 
+  const requestVersion = useRef(0);
   const fetchAssets = useCallback(async () => {
+    const version = ++requestVersion.current;
     setIsLoading(true);
     setError(null);
     try {
       const data = await assetsService.getAssets({
+        employeeId: employeeFilter ? Number(employeeFilter) : undefined,
         search: search || undefined,
         status: statusFilter || undefined,
         category: categoryFilter || undefined,
       });
-      setAssets(data);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to fetch assets');
+      if (version === requestVersion.current) setAssets(data);
+    } catch (err: unknown) {
+      if (version === requestVersion.current) setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch assets');
     } finally {
-      setIsLoading(false);
+      if (version === requestVersion.current) setIsLoading(false);
     }
-  }, [search, statusFilter, categoryFilter]);
+  }, [search, statusFilter, categoryFilter, employeeFilter]);
 
   useEffect(() => {
-    fetchAssets();
+    const timer = setTimeout(() => { void fetchAssets(); }, 0);
+    return () => clearTimeout(timer);
   }, [fetchAssets]);
 
   useEffect(() => {
+    employeesService.getEmployees().then(setEmployees).catch(() => {});
     categoriesService.getCategories().then(setCategories).catch(() => {});
   }, []);
 
@@ -79,6 +93,10 @@ export function useAssetsPage() {
       model: asset.model || '',
       serialNumber: asset.serialNumber || '',
       status: asset.status,
+      condition: asset.condition,
+      purchasePrice: asset.purchasePrice ?? undefined,
+      warrantyExpiryDate: asset.warrantyExpiryDate?.substring(0,10) || '',
+      notes: asset.notes || '',
       purchaseDate: asset.purchaseDate ? asset.purchaseDate.substring(0, 10) : '',
     });
     setError(null);
@@ -100,12 +118,12 @@ export function useAssetsPage() {
         setIsCreateOpen(false);
       }
       await fetchAssets();
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError(err?.message || 'Failed to save asset');
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to save asset');
       }
     } finally {
       setIsSubmitting(false);
@@ -119,8 +137,8 @@ export function useAssetsPage() {
       await assetsService.deleteAsset(deletingAsset.id);
       setDeletingAsset(null);
       await fetchAssets();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to delete asset');
+    } catch (err: unknown) {
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete asset');
     } finally {
       setIsSubmitting(false);
     }
@@ -128,6 +146,7 @@ export function useAssetsPage() {
 
   return {
     assets,
+    employees, employeeFilter, setEmployeeFilter,
     categories,
     isLoading,
     error,

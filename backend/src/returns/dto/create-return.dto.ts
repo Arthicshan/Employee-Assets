@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsDateString,
   IsInt,
   IsIn,
   IsOptional,
@@ -26,4 +27,7 @@ export class CreateReturnDto {
   @IsOptional()
   @IsString()
   notes?: string;
+  @IsOptional()
+  @IsDateString()
+  returnedAt?: string;
 }

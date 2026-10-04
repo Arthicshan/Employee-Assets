@@ -12,6 +12,7 @@ describe('ReturnsService', () => {
       update: jest.fn(),
     },
     asset: {
+      findUnique: jest.fn().mockResolvedValue({status: 'assigned'}),
       update: jest.fn(),
     },
     assetHistory: {
@@ -79,6 +80,7 @@ describe('ReturnsService', () => {
         where: { id: 5 },
         data: {
           status: 'available',
+          condition: 'GOOD',
           employeeId: null,
         },
       });
@@ -109,6 +111,7 @@ describe('ReturnsService', () => {
         where: { id: 5 },
         data: {
           status: 'damaged',
+          condition: 'DAMAGED',
           employeeId: null,
         },
       });

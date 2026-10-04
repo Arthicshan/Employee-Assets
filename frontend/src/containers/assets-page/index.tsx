@@ -10,7 +10,8 @@ import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { StatusBadge } from '@/components/Badge';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Boxes, Plus, Pencil, Trash2, Search, Filter, AlertCircle, Eye } from 'lucide-react';
+import { Boxes, Plus, Pencil, Trash2, Search, AlertCircle, Eye } from 'lucide-react';
+import { assetsService } from '@/services/assets/assets.service';
 import { Asset } from '@/types';
 import { sessionManager } from '@/libs/api/session-storage';
 
@@ -19,6 +20,7 @@ export const AssetsPageContainer: React.FC = () => {
   const isAdmin = sessionManager.getUser()?.role === 'ADMIN';
   const {
     assets,
+    employees, employeeFilter, setEmployeeFilter,
     categories,
     isLoading,
     error,
@@ -41,7 +43,7 @@ export const AssetsPageContainer: React.FC = () => {
     openCreateModal,
     openEditModal,
     handleSave,
-    handleDelete,
+    handleDelete, refresh,
   } = useAssetsPage();
 
   const statusOptions = [
@@ -121,6 +123,12 @@ export const AssetsPageContainer: React.FC = () => {
           >
             <Eye className="w-4 h-4" />
           </button>
+          {!isAdmin && (
+            <Select aria-label="Change asset status" value={row.status} options={statusOptions.filter(o => o.value && (o.value !== 'assigned' || row.status === 'assigned'))} onChange={async e => {
+              try { await assetsService.changeStatus(row.id, e.target.value); await refresh(); }
+              catch (error) { window.alert(error instanceof Error ? error.message : 'Unable to change status'); }
+            }} />
+          )}
           {isAdmin && (
             <>
               <button
@@ -133,7 +141,7 @@ export const AssetsPageContainer: React.FC = () => {
               <button
                 onClick={() => setDeletingAsset(row)}
                 className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                title="Delete Asset"
+                title="Retire Asset"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -178,7 +186,7 @@ export const AssetsPageContainer: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by tag, name, brand, model..."
+            placeholder="Search by tag, name, brand, model or serial..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
@@ -203,6 +211,7 @@ export const AssetsPageContainer: React.FC = () => {
         </div>
       </div>
 
+      <Select label="Assigned Employee" value={employeeFilter} onChange={e => setEmployeeFilter(e.target.value)} options={[{label: 'All Employees', value: ''}, ...employees.map(e => ({label: `${e.firstName} ${e.lastName} (${e.employeeNo})`, value: String(e.id)}))]} />
       {/* Table */}
       <Table
         columns={columns}
@@ -260,7 +269,7 @@ export const AssetsPageContainer: React.FC = () => {
                 label="Category"
                 required
                 placeholder="Select category..."
-                options={categories.map((c) => ({ label: c.name, value: c.name }))}
+                options={categories.filter(c => c.active || c.name === editingAsset?.category).map((c) => ({ label: c.name, value: c.name }))}
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               />
@@ -292,7 +301,7 @@ export const AssetsPageContainer: React.FC = () => {
                 label="Status"
                 options={[
                   { label: 'Available', value: 'available' },
-                  { label: 'Assigned', value: 'assigned' },
+                  ...(editingAsset?.status === 'assigned' ? [{label: 'Assigned', value: 'assigned'}] : []),
                   { label: 'Damaged', value: 'damaged' },
                   { label: 'Under Repair', value: 'under_repair' },
                   { label: 'Lost', value: 'lost' },
@@ -309,6 +318,12 @@ export const AssetsPageContainer: React.FC = () => {
               />
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select label="Condition" options={['NEW','GOOD','FAIR','DAMAGED'].map(value => ({label: value, value}))} value={formData.condition || 'GOOD'} onChange={e => setFormData({...formData, condition: e.target.value as Asset['condition']})} />
+              <Input label="Purchase Price" type="number" min="0" step="0.01" value={formData.purchasePrice ?? ''} onChange={e => setFormData({...formData, purchasePrice: e.target.value ? Number(e.target.value) : undefined})} />
+              <Input label="Warranty Expiry" type="date" value={formData.warrantyExpiryDate || ''} onChange={e => setFormData({...formData, warrantyExpiryDate: e.target.value})} />
+              <Input label="Notes" value={formData.notes || ''} onChange={e => setFormData({...formData, notes: e.target.value})} />
+            </div>
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
               <Button
                 type="button"
@@ -335,9 +350,9 @@ export const AssetsPageContainer: React.FC = () => {
           isOpen={!!deletingAsset}
           onClose={() => setDeletingAsset(null)}
           onConfirm={handleDelete}
-          title="Delete Asset"
-          message={`Are you sure you want to delete "${deletingAsset?.name}" (${deletingAsset?.assetTag})? This action cannot be undone.`}
-          confirmLabel="Delete Asset"
+          title="Retire Asset"
+          message={`Are you sure you want to retire "${deletingAsset?.name}" (${deletingAsset?.assetTag})? The asset and its history will remain in the inventory.`}
+          confirmLabel="Retire Asset"
           isLoading={isSubmitting}
         />
       )}

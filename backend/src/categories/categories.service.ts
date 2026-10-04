@@ -1,3 +1,6 @@
+import { BadRequestException } from '@nestjs/common';
+import { ListQueryDto } from '../common/dto/list-query.dto';
+import { listOptions, listResponse } from '../common/list-query';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -5,12 +8,16 @@ import { PrismaService } from '../prisma/prisma.service';
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
-    return this.prisma.assetCategory.findMany({
-      orderBy: {
-        id: 'asc',
-      },
+  async findAll(query: ListQueryDto = {}) {
+    const searchWhere = query.search ? { OR: ["name", "description"].map(field => ({[field]: {contains: query.search, mode: 'insensitive' as const}})) } : {};
+    const status = query.status?.toUpperCase();
+    if (status && !['ACTIVE','INACTIVE'].includes(status)) throw new BadRequestException('Status must be ACTIVE or INACTIVE');
+    const where = {...searchWhere, ...(status && {active: status === 'ACTIVE'})};
+    const data = await this.prisma.assetCategory.findMany({
+      where,
+      ...listOptions(query, ["id", "createdAt", "name", "description"]),
     });
+    return listResponse(data, query.page || query.limit ? await this.prisma.assetCategory.count({where}) : data.length, query);
   }
 
   async findOne(id: number) {
