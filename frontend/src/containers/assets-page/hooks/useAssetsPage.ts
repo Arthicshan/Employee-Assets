@@ -109,6 +109,16 @@ export function useAssetsPage() {
     setError(null);
     setValidationErrors([]);
 
+    if (formData.purchaseDate && formData.warrantyExpiryDate) {
+      if (formData.warrantyExpiryDate < formData.purchaseDate) {
+        const msg = 'Warranty expiry date cannot be earlier than purchase date';
+        setError(msg);
+        setValidationErrors([msg]);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       if (editingAsset) {
         await assetsService.updateAsset(editingAsset.id, formData);

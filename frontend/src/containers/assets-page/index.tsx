@@ -321,7 +321,14 @@ export const AssetsPageContainer: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select label="Condition" options={['NEW','GOOD','FAIR','DAMAGED'].map(value => ({label: value, value}))} value={formData.condition || 'GOOD'} onChange={e => setFormData({...formData, condition: e.target.value as Asset['condition']})} />
               <Input label="Purchase Price" type="number" min="0" step="0.01" value={formData.purchasePrice ?? ''} onChange={e => setFormData({...formData, purchasePrice: e.target.value ? Number(e.target.value) : undefined})} />
-              <Input label="Warranty Expiry" type="date" value={formData.warrantyExpiryDate || ''} onChange={e => setFormData({...formData, warrantyExpiryDate: e.target.value})} />
+              <Input
+                label="Warranty Expiry"
+                type="date"
+                min={formData.purchaseDate || undefined}
+                value={formData.warrantyExpiryDate || ''}
+                onChange={e => setFormData({...formData, warrantyExpiryDate: e.target.value})}
+                error={formData.purchaseDate && formData.warrantyExpiryDate && formData.warrantyExpiryDate < formData.purchaseDate ? 'Warranty expiry date cannot be earlier than purchase date' : undefined}
+              />
               <Input label="Notes" value={formData.notes || ''} onChange={e => setFormData({...formData, notes: e.target.value})} />
             </div>
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
@@ -336,7 +343,12 @@ export const AssetsPageContainer: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" isLoading={isSubmitting}>
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting}
+                disabled={Boolean(formData.purchaseDate && formData.warrantyExpiryDate && formData.warrantyExpiryDate < formData.purchaseDate)}
+              >
                 {editingAsset ? 'Update Asset' : 'Register Asset'}
               </Button>
             </div>
