@@ -114,16 +114,8 @@ export const EmployeesPageContainer: React.FC = () => {
               </button>
               <button
                 onClick={() => setDeletingEmployee(row)}
-                className={`p-1.5 rounded-md transition-colors cursor-pointer ${
-                  (row._count?.assignments ?? 0) + (row._count?.assets ?? 0) > 0
-                    ? 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'
-                    : 'text-slate-500 hover:text-rose-600 hover:bg-rose-50'
-                }`}
-                title={
-                  (row._count?.assignments ?? 0) + (row._count?.assets ?? 0) > 0
-                    ? `Employee has ${(row._count?.assignments ?? 0) + (row._count?.assets ?? 0)} active assigned asset(s)`
-                    : 'Delete Employee'
-                }
+                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                title="Delete Employee"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -275,25 +267,14 @@ export const EmployeesPageContainer: React.FC = () => {
                   ? 'Active employee (eligible to receive equipment assignments)'
                   : 'Inactive employee (blocked from receiving new assignments)'}
               </p>
-              {(editingEmployee?._count?.assignments ?? 0) + (editingEmployee?._count?.assets ?? 0) > 0 && (
-                <p className="text-[11px] text-amber-700 font-medium mt-1">
-                  Cannot deactivate: This employee has {(editingEmployee?._count?.assignments ?? 0) + (editingEmployee?._count?.assets ?? 0)} active assigned asset(s).
-                </p>
-              )}
             </div>
             <button
               type="button"
-              disabled={(editingEmployee?._count?.assignments ?? 0) + (editingEmployee?._count?.assets ?? 0) > 0 && formData.isActive !== false}
-              onClick={() => {
-                if ((editingEmployee?._count?.assignments ?? 0) + (editingEmployee?._count?.assets ?? 0) > 0 && formData.isActive !== false) {
-                  return;
-                }
-                setFormData({ ...formData, isActive: formData.isActive === false ? true : false });
-              }}
-              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
-                (editingEmployee?._count?.assignments ?? 0) + (editingEmployee?._count?.assets ?? 0) > 0 && formData.isActive !== false
-                  ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                  : 'cursor-pointer ' + (formData.isActive !== false ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-200 text-slate-700 border-slate-300')
+              onClick={() => setFormData({ ...formData, isActive: formData.isActive === false ? true : false })}
+              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors cursor-pointer ${
+                formData.isActive !== false
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : 'bg-slate-200 text-slate-700 border-slate-300'
               }`}
             >
               {formData.isActive !== false ? 'Active' : 'Inactive'}
@@ -320,25 +301,15 @@ export const EmployeesPageContainer: React.FC = () => {
       </Modal>
 
       {/* Delete Confirmation */}
-      {(() => {
-        const activeAssetsCount = (deletingEmployee?._count?.assignments ?? 0) + (deletingEmployee?._count?.assets ?? 0);
-        return (
-          <ConfirmDialog
-            isOpen={!!deletingEmployee}
-            onClose={() => setDeletingEmployee(null)}
-            onConfirm={handleDelete}
-            title={activeAssetsCount > 0 ? 'Cannot Delete Employee' : 'Delete Employee Record'}
-            message={
-              activeAssetsCount > 0
-                ? `Cannot delete "${deletingEmployee?.firstName} ${deletingEmployee?.lastName}" (${deletingEmployee?.employeeNo}) because they currently have ${activeAssetsCount} active assigned asset(s). Return all assigned equipment before deleting or deactivating this employee.`
-                : `Are you sure you want to delete ${deletingEmployee?.firstName} ${deletingEmployee?.lastName} (${deletingEmployee?.employeeNo})?`
-            }
-            confirmLabel={activeAssetsCount > 0 ? 'Blocked (Active Assets)' : 'Delete Employee'}
-            isConfirmDisabled={activeAssetsCount > 0}
-            isLoading={isSubmitting}
-          />
-        );
-      })()}
+      <ConfirmDialog
+        isOpen={!!deletingEmployee}
+        onClose={() => setDeletingEmployee(null)}
+        onConfirm={handleDelete}
+        title="Delete Employee Record"
+        message={`Are you sure you want to delete ${deletingEmployee?.firstName} ${deletingEmployee?.lastName} (${deletingEmployee?.employeeNo})? Any assigned assets will need reassignment.`}
+        confirmLabel="Delete Employee"
+        isLoading={isSubmitting}
+      />
     </div>
   );
 };

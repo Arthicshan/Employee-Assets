@@ -20,10 +20,7 @@ export class EmployeeService {
       ...listOptions(query, ["id", "createdAt", "employeeNo", "firstName", "lastName", "email", "department", "position"]),
       include: {
         _count: {
-          select: {
-            assets: { where: { status: 'assigned' } },
-            assignments: { where: { status: 'ACTIVE' } },
-          },
+          select: { assets: true, assignments: true },
         },
       },
     });
@@ -59,68 +56,17 @@ export class EmployeeService {
   }
 
   async update(id: number, data: UpdateEmployeeDto) {
-    const employee = await this.findOne(id);
-    if (data.isActive === false && employee.isActive !== false) {
-      const activeAssignments = await this.prisma.assetAssignment.count({
-        where: { employeeId: id, status: 'ACTIVE' },
-      });
-      const assignedAssets = await this.prisma.asset.count({
-        where: { employeeId: id, status: 'assigned' },
-      });
-      if (activeAssignments > 0 || assignedAssets > 0) {
-        throw new BadRequestException('Cannot deactivate employee with active assigned assets. Return all assigned assets first.');
-      }
-    }
-
-    const updated = await this.prisma.employee.update({
+    await this.findOne(id);
+    return this.prisma.employee.update({
       where: { id },
       data,
     });
-
-    if (data.isActive !== undefined) {
-      await this.prisma.user.updateMany({
-        where: { OR: [{ employeeId: id }, { email: employee.email }] },
-        data: { isActive: data.isActive },
-      });
-    }
-
-    return updated;
   }
 
   async remove(id: number) {
-    const employee = await this.findOne(id);
-    const activeAssignments = await this.prisma.assetAssignment.count({
-      where: { employeeId: id, status: 'ACTIVE' },
-    });
-    const assignedAssets = await this.prisma.asset.count({
-      where: { employeeId: id, status: 'assigned' },
-    });
-    if (activeAssignments > 0 || assignedAssets > 0) {
-      throw new BadRequestException('Cannot delete employee with active assigned assets. Return all assigned assets first.');
-    }
-
-    const pastAssignments = await this.prisma.assetAssignment.count({
-      where: { employeeId: id },
-    });
-    const historyCount = await this.prisma.assetHistory.count({
-      where: { employeeId: id },
-    });
-    if (pastAssignments > 0 || historyCount > 0) {
-      await this.prisma.employee.update({
-        where: { id },
-        data: { isActive: false },
-      });
-      await this.prisma.user.updateMany({
-        where: { OR: [{ employeeId: id }, { email: employee.email }] },
-        data: { isActive: false },
-      });
-      return { id, deactivated: true, message: 'Employee has been deactivated instead of deleted to preserve asset history.' };
-    }
-
-    await this.prisma.user.deleteMany({
-      where: { OR: [{ employeeId: id }, { email: employee.email }] },
-    });
-
+    await this.findOne(id);
+    const referenced = await this.prisma.assetAssignment.count({where: {employeeId: id}}) + await this.prisma.assetHistory.count({where: {employeeId: id}});
+    if (referenced) return this.prisma.employee.update({where: {id}, data: {isActive: false}});
     return this.prisma.employee.delete({
       where: { id },
     });

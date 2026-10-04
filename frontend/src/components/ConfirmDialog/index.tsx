@@ -14,7 +14,6 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   isLoading?: boolean;
-  isConfirmDisabled?: boolean;
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -26,7 +25,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   isLoading = false,
-  isConfirmDisabled = false,
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
@@ -39,13 +37,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <Button variant="secondary" onClick={onClose} disabled={isLoading} className="flex-1">
             {cancelLabel}
           </Button>
-          <Button
-            variant="danger"
-            onClick={onConfirm}
-            isLoading={isLoading}
-            disabled={isLoading || isConfirmDisabled}
-            className="flex-1"
-          >
+          <Button variant="danger" onClick={onConfirm} isLoading={isLoading} className="flex-1">
             {confirmLabel}
           </Button>
         </div>

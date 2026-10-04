@@ -93,24 +93,7 @@ export class UsersService {
   }
 
   async update(id: number, dto: UpdateUserDto) {
-    const user = await this.findOne(id);
-
-    if (dto.isActive === false && user.isActive !== false) {
-      const emp = await this.prisma.employee.findFirst({
-        where: { email: user.email },
-      });
-      if (emp) {
-        const activeAssignments = await this.prisma.assetAssignment.count({
-          where: { employeeId: emp.id, status: 'ACTIVE' },
-        });
-        const assignedAssets = await this.prisma.asset.count({
-          where: { employeeId: emp.id, status: 'assigned' },
-        });
-        if (activeAssignments > 0 || assignedAssets > 0) {
-          throw new BadRequestException('Cannot deactivate employee with active assigned assets. Return all assigned assets first.');
-        }
-      }
-    }
+    await this.findOne(id);
 
     if (dto.email) {
       const existing = await this.prisma.user.findFirst({
@@ -129,7 +112,7 @@ export class UsersService {
       passwordHash = await bcrypt.hash(dto.password, 10);
     }
 
-    const updated = await this.prisma.user.update({
+    return this.prisma.user.update({
       where: { id },
       data: {
         ...(dto.email && { email: dto.email.toLowerCase().trim() }),
@@ -152,41 +135,13 @@ export class UsersService {
         updatedAt: true,
       },
     });
-
-    if (dto.isActive !== undefined) {
-      await this.prisma.employee.updateMany({
-        where: { email: user.email },
-        data: { isActive: dto.isActive },
-      });
-    }
-
-    return updated;
   }
 
   async toggleStatus(id: number) {
     const user = await this.findOne(id);
-    const newStatus = !user.isActive;
-
-    if (!newStatus) {
-      const emp = await this.prisma.employee.findFirst({
-        where: { email: user.email },
-      });
-      if (emp) {
-        const activeAssignments = await this.prisma.assetAssignment.count({
-          where: { employeeId: emp.id, status: 'ACTIVE' },
-        });
-        const assignedAssets = await this.prisma.asset.count({
-          where: { employeeId: emp.id, status: 'assigned' },
-        });
-        if (activeAssignments > 0 || assignedAssets > 0) {
-          throw new BadRequestException('Cannot deactivate employee with active assigned assets. Return all assigned assets first.');
-        }
-      }
-    }
-
-    const updated = await this.prisma.user.update({
+    return this.prisma.user.update({
       where: { id },
-      data: { isActive: newStatus },
+      data: { isActive: !user.isActive },
       select: {
         id: true,
         email: true,
@@ -199,13 +154,6 @@ export class UsersService {
         updatedAt: true,
       },
     });
-
-    await this.prisma.employee.updateMany({
-      where: { email: user.email },
-      data: { isActive: newStatus },
-    });
-
-    return updated;
   }
 
   async remove(id: number, currentUserId?: number) {
