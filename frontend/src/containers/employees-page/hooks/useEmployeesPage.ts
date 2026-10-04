@@ -91,6 +91,16 @@ export function useEmployeesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingEmployee && formData.isActive === false && editingEmployee.isActive !== false) {
+      const activeCount = (editingEmployee._count?.assignments ?? 0) + (editingEmployee._count?.assets ?? 0);
+      if (activeCount > 0) {
+        const msg = `Cannot deactivate employee "${editingEmployee.firstName} ${editingEmployee.lastName}" because they have ${activeCount} active assigned asset(s). Return all assigned assets first.`;
+        setError(msg);
+        toast.error(msg);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     setError(null);
     setValidationErrors([]);
@@ -122,14 +132,27 @@ export function useEmployeesPage() {
 
   const handleDelete = async () => {
     if (!deletingEmployee) return;
+    const activeCount = (deletingEmployee._count?.assignments ?? 0) + (deletingEmployee._count?.assets ?? 0);
+    if (activeCount > 0) {
+      const msg = `Cannot delete employee "${deletingEmployee.firstName} ${deletingEmployee.lastName}" because they have ${activeCount} active assigned asset(s). Return all assigned assets first.`;
+      setError(msg);
+      toast.error(msg);
+      setDeletingEmployee(null);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      await employeesService.deleteEmployee(deletingEmployee.id);
-      toast.success(`Employee "${deletingEmployee.firstName} ${deletingEmployee.lastName}" status updated successfully`);
+      const res = (await employeesService.deleteEmployee(deletingEmployee.id)) as unknown as { deactivated?: boolean } | undefined;
+      if (res && res.deactivated) {
+        toast.info(`Employee "${deletingEmployee.firstName} ${deletingEmployee.lastName}" has historical records and was deactivated instead of deleted.`);
+      } else {
+        toast.success(`Employee "${deletingEmployee.firstName} ${deletingEmployee.lastName}" deleted successfully`);
+      }
       setDeletingEmployee(null);
       await fetchEmployees();
     } catch (err: unknown) {
-      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete employee';
+      const msg = (err instanceof ApiError ? err.message : undefined) || (err instanceof Error ? err.message : undefined) || 'Failed to delete employee';
       setError(msg);
       toast.error(msg);
     } finally {

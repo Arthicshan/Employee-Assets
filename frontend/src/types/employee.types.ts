@@ -7,6 +7,10 @@ export interface Employee {
   department: string;
   position: string;
   isActive?: boolean;
+  _count?: {
+    assets: number;
+    assignments: number;
+  };
   createdAt: string;
   updatedAt: string;
 }

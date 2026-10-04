@@ -8,7 +8,6 @@ import { assetsService } from '@/services/assets/assets.service';
 import { categoriesService } from '@/services/categories/categories.service';
 import { Asset, AssetCategory, CreateAssetDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
-import { toast } from '@/components/Toast';
 
 export function useAssetsPage() {
   const searchParams = useSearchParams();
@@ -113,23 +112,19 @@ export function useAssetsPage() {
     try {
       if (editingAsset) {
         await assetsService.updateAsset(editingAsset.id, formData);
-        toast.success(`Asset "${formData.name || editingAsset.name}" updated successfully`);
         setEditingAsset(null);
       } else {
         await assetsService.createAsset(formData);
-        toast.success(`Asset "${formData.name}" registered successfully`);
         setIsCreateOpen(false);
       }
       await fetchAssets();
     } catch (err: unknown) {
-      const msg = (err instanceof ApiError ? err.message : undefined) || (err instanceof Error ? err.message : undefined) || 'Failed to save asset';
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError(msg);
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to save asset');
       }
-      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -140,13 +135,10 @@ export function useAssetsPage() {
     setIsSubmitting(true);
     try {
       await assetsService.deleteAsset(deletingAsset.id);
-      toast.success(`Asset "${deletingAsset.name}" retired successfully`);
       setDeletingAsset(null);
       await fetchAssets();
     } catch (err: unknown) {
-      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete asset';
-      setError(msg);
-      toast.error(msg);
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete asset');
     } finally {
       setIsSubmitting(false);
     }
