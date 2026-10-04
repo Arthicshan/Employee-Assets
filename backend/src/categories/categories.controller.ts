@@ -8,7 +8,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -62,19 +61,6 @@ export class CategoriesController {
   @ApiResponse({ status: 200, description: 'Category updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   update(
-    @Param('id', IdPipe) id: string,
-    @Body()
-    data: UpdateCategoryDto,
-  ) {
-    return this.categoriesService.update(Number(id), data);
-  }
-
-  @Put(':id')
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Update an asset category (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Category updated successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  put(
     @Param('id', IdPipe) id: string,
     @Body()
     data: UpdateCategoryDto,

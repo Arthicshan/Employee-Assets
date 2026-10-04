@@ -1,6 +1,6 @@
 import { Query, ParseIntPipe as IdPipe } from '@nestjs/common';
 import { ListQueryDto } from '../common/dto/list-query.dto';
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -49,15 +49,6 @@ export class EmployeeController {
   @ApiResponse({ status: 200, description: 'Employee updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   update(@Param('id', IdPipe) id: string, @Body() data: UpdateEmployeeDto) {
-    return this.employeeService.update(Number(id), data);
-  }
-
-  @Patch(':id')
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Partially update employee record (Admin only)' })
-  @ApiResponse({ status: 200, description: 'Employee updated successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  patch(@Param('id', IdPipe) id: string, @Body() data: UpdateEmployeeDto) {
     return this.employeeService.update(Number(id), data);
   }
 
