@@ -56,15 +56,21 @@ export class UsersController {
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserDto,
+    @Req() req: any,
   ) {
-    return this.usersService.update(id, dto);
+    const currentUserId = req.user?.id || req.user?.sub || req.user?.userId;
+    return this.usersService.update(id, dto, currentUserId);
   }
 
   @Patch(':id/status')
   @ApiOperation({ summary: 'Toggle user active/deactive status (Admin only)' })
   @ApiResponse({ status: 200, description: 'User status toggled' })
-  toggleStatus(@Param('id', ParseIntPipe) id: number) {
-    return this.usersService.toggleStatus(id);
+  toggleStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: any,
+  ) {
+    const currentUserId = req.user?.id || req.user?.sub || req.user?.userId;
+    return this.usersService.toggleStatus(id, currentUserId);
   }
 
   @Delete(':id')
