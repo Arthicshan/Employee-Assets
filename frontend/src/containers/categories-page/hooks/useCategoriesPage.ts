@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { categoriesService } from '@/services/categories/categories.service';
 import { AssetCategory, CreateCategoryDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
 
 export function useCategoriesPage() {
   const [categories, setCategories] = useState<AssetCategory[]>([]);
@@ -65,19 +66,23 @@ export function useCategoriesPage() {
     try {
       if (editingCategory) {
         await categoriesService.updateCategory(editingCategory.id, formData);
+        toast.success(`Category "${formData.name}" updated successfully`);
         setEditingCategory(null);
       } else {
         await categoriesService.createCategory(formData);
+        toast.success(`Category "${formData.name}" created successfully`);
         setIsCreateOpen(false);
       }
       await fetchCategories();
     } catch (err: unknown) {
+      const msg = (err instanceof ApiError ? err.message : undefined) || (err instanceof Error ? err.message : undefined) || 'Failed to save category';
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save category');
+        setError(msg);
       }
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -88,10 +93,13 @@ export function useCategoriesPage() {
     setIsSubmitting(true);
     try {
       await categoriesService.deleteCategory(deletingCategory.id);
+      toast.success(`Category "${deletingCategory.name}" deleted successfully`);
       setDeletingCategory(null);
       await fetchCategories();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete category');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete category';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }

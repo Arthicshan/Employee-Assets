@@ -7,6 +7,7 @@ import { assetsService } from '@/services/assets/assets.service';
 import { employeesService } from '@/services/employees/employees.service';
 import { AssetAssignment, Asset, Employee, CreateAssignmentDto, CreateReturnDto, PaginatedMeta } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
 
 export function useAssignmentsPage() {
   const [search, setSearch] = useState('');
@@ -114,15 +115,18 @@ export function useAssignmentsPage() {
         notes: assignForm.notes,
         assignedAt: assignForm.assignedAt ? new Date(assignForm.assignedAt).toISOString() : undefined,
       });
+      toast.success('Asset assigned successfully');
       setIsAssignOpen(false);
       await Promise.all([fetchAssignments(), loadResources()]);
     } catch (err: unknown) {
+      const msg = (err instanceof ApiError ? err.message : undefined) || (err instanceof Error ? err.message : undefined) || 'Failed to create assignment';
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to create assignment');
+        setError(msg);
       }
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -153,15 +157,18 @@ export function useAssignmentsPage() {
         notes: returnForm.notes,
         returnedAt: returnForm.returnedAt ? new Date(returnForm.returnedAt).toISOString() : undefined,
       });
+      toast.success('Asset returned successfully');
       setReturnTarget(null);
       await Promise.all([fetchAssignments(), loadResources()]);
     } catch (err: unknown) {
+      const msg = (err instanceof ApiError ? err.message : undefined) || (err instanceof Error ? err.message : undefined) || 'Failed to process return';
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to process return');
+        setError(msg);
       }
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }

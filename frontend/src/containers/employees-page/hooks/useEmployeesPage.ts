@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { employeesService } from '@/services/employees/employees.service';
 import { Employee, CreateEmployeeDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
 
 export function useEmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -97,19 +98,23 @@ export function useEmployeesPage() {
     try {
       if (editingEmployee) {
         await employeesService.updateEmployee(editingEmployee.id, formData);
+        toast.success(`Employee "${formData.firstName} ${formData.lastName}" updated successfully`);
         setEditingEmployee(null);
       } else {
         await employeesService.createEmployee(formData);
+        toast.success(`Employee "${formData.firstName} ${formData.lastName}" registered successfully`);
         setIsCreateOpen(false);
       }
       await fetchEmployees();
     } catch (err: unknown) {
+      const msg = (err instanceof ApiError ? err.message : undefined) || (err instanceof Error ? err.message : undefined) || 'Failed to save employee';
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save employee');
+        setError(msg);
       }
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -120,10 +125,13 @@ export function useEmployeesPage() {
     setIsSubmitting(true);
     try {
       await employeesService.deleteEmployee(deletingEmployee.id);
+      toast.success(`Employee "${deletingEmployee.firstName} ${deletingEmployee.lastName}" status updated successfully`);
       setDeletingEmployee(null);
       await fetchEmployees();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete employee');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete employee';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }

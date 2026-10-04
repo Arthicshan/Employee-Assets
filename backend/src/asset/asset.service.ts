@@ -46,19 +46,8 @@ export class AssetService {
     return category.name;
   }
 
-  private validateDates(purchaseDate?: string | Date | null, warrantyExpiryDate?: string | Date | null) {
-    if (purchaseDate && warrantyExpiryDate) {
-      const p = new Date(purchaseDate).getTime();
-      const w = new Date(warrantyExpiryDate).getTime();
-      if (!isNaN(p) && !isNaN(w) && w < p) {
-        throw new BadRequestException('Warranty expiry date cannot be earlier than purchase date');
-      }
-    }
-  }
-
   async create(data: CreateAssetDto) {
     if (data.status === 'assigned') throw new BadRequestException('Use the assignment workflow to assign assets');
-    this.validateDates(data.purchaseDate, data.warrantyExpiryDate);
     return this.prisma.$transaction(async tx => {
       const canonicalCategory = await this.validateCategory(tx, data.category);
       const asset = await tx.asset.create({data: {
@@ -75,9 +64,6 @@ export class AssetService {
     return this.prisma.$transaction(async tx => {
       const asset = await tx.asset.findUnique({where: {id}});
       if (!asset) throw new NotFoundException(`Asset with ID ${id} not found`);
-      const effectivePurchaseDate = data.purchaseDate !== undefined ? data.purchaseDate : asset.purchaseDate;
-      const effectiveWarrantyDate = data.warrantyExpiryDate !== undefined ? data.warrantyExpiryDate : asset.warrantyExpiryDate;
-      this.validateDates(effectivePurchaseDate, effectiveWarrantyDate);
       let category = asset.category;
       if (data.category) {
         category = await this.validateCategory(tx, data.category);

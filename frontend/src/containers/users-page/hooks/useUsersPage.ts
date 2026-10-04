@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usersService } from '@/services/users/users.service';
 import { SystemUser, CreateSystemUserDto, UpdateSystemUserDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
 
 export function useUsersPage() {
   const [users, setUsers] = useState<SystemUser[]>([]);
@@ -91,19 +92,23 @@ export function useUsersPage() {
           updatePayload.password = formData.password;
         }
         await usersService.updateUser(editingUser.id, updatePayload);
+        toast.success(`User "${formData.firstName || editingUser.firstName} ${formData.lastName || editingUser.lastName}" updated successfully`);
         setEditingUser(null);
       } else {
         await usersService.createUser(formData);
+        toast.success(`User "${formData.firstName} ${formData.lastName}" created successfully`);
         setIsCreateOpen(false);
       }
       await fetchUsers();
     } catch (err: unknown) {
+      const msg = (err instanceof ApiError ? err.message : undefined) || (err instanceof Error ? err.message : undefined) || 'Failed to save user account';
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save user account');
+        setError(msg);
       }
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -112,9 +117,12 @@ export function useUsersPage() {
   const handleToggleStatus = async (user: SystemUser) => {
     try {
       await usersService.toggleStatus(user.id);
+      toast.success(`User ${user.firstName} status changed to ${user.isActive ? 'Deactive' : 'Active'}`);
       await fetchUsers();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to update user status');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to update user status';
+      setError(msg);
+      toast.error(msg);
     }
   };
 
@@ -123,10 +131,13 @@ export function useUsersPage() {
     setIsSubmitting(true);
     try {
       await usersService.deleteUser(deletingUser.id);
+      toast.success(`User "${deletingUser.firstName} ${deletingUser.lastName}" deleted successfully`);
       setDeletingUser(null);
       await fetchUsers();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete user account');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete user account';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }
