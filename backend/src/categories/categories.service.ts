@@ -41,8 +41,8 @@ export class CategoriesService {
   }) {
     return this.prisma.assetCategory.create({
       data: {
-        name: data.name,
-        description: data.description,
+        name: data.name.trim(),
+        description: data.description?.trim(),
         active: data.active ?? true,
       },
     });
@@ -60,7 +60,11 @@ export class CategoriesService {
 
     return this.prisma.assetCategory.update({
       where: { id },
-      data,
+      data: {
+        ...(data.name !== undefined && { name: data.name.trim() }),
+        ...(data.description !== undefined && { description: data.description?.trim() }),
+        ...(data.active !== undefined && { active: data.active }),
+      },
     });
   }
 

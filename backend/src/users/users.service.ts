@@ -92,31 +92,10 @@ export class UsersService {
     });
   }
 
-  async update(id: number, dto: UpdateUserDto, currentUserId?: number) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { id },
-      include: { employee: true },
-    });
+  async update(id: number, dto: UpdateUserDto) {
+    await this.findOne(id);
 
-    if (!existingUser) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
-
-    // Prevent changing own role or deactivating own account
-    if (currentUserId && id === currentUserId) {
-      if (dto.role && dto.role !== existingUser.role) {
-        throw new BadRequestException('You cannot change your own role');
-      }
-      if (dto.isActive === false) {
-        throw new BadRequestException('You cannot deactivate your own account');
-      }
-    }
-
-    if (existingUser.email === 'admin@assetflow.com' && dto.role && dto.role !== 'ADMIN') {
-      throw new BadRequestException('The primary system administrator role cannot be demoted');
-    }
-
-    if (dto.email && dto.email.toLowerCase().trim() !== existingUser.email) {
+    if (dto.email) {
       const existing = await this.prisma.user.findFirst({
         where: {
           email: dto.email.toLowerCase().trim(),
@@ -131,47 +110,6 @@ export class UsersService {
     let passwordHash: string | undefined;
     if (dto.password) {
       passwordHash = await bcrypt.hash(dto.password, 10);
-    }
-
-    // Resolve linked employee if exists
-    let linkedEmployee = existingUser.employee;
-    if (!linkedEmployee && existingUser.employeeId) {
-      linkedEmployee = await this.prisma.employee.findUnique({
-        where: { id: existingUser.employeeId },
-      });
-    }
-    if (!linkedEmployee) {
-      linkedEmployee = await this.prisma.employee.findUnique({
-        where: { email: existingUser.email },
-      });
-    }
-
-    let linkedEmployeeId = existingUser.employeeId ?? linkedEmployee?.id;
-
-    // Synchronize linked employee record if present
-    if (linkedEmployee) {
-      const targetEmail = dto.email ? dto.email.toLowerCase().trim() : undefined;
-      let canUpdateEmployeeEmail = true;
-
-      if (targetEmail && targetEmail !== linkedEmployee.email) {
-        const emailOccupied = await this.prisma.employee.findUnique({
-          where: { email: targetEmail },
-        });
-        if (emailOccupied && emailOccupied.id !== linkedEmployee.id) {
-          canUpdateEmployeeEmail = false;
-        }
-      }
-
-      await this.prisma.employee.update({
-        where: { id: linkedEmployee.id },
-        data: {
-          ...(dto.firstName && { firstName: dto.firstName.trim() }),
-          ...(dto.lastName && { lastName: dto.lastName.trim() }),
-          ...(dto.position !== undefined && { position: dto.position.trim() }),
-          ...(canUpdateEmployeeEmail && targetEmail ? { email: targetEmail } : {}),
-          ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
-        },
-      });
     }
 
     return this.prisma.user.update({
@@ -199,36 +137,11 @@ export class UsersService {
     });
   }
 
-  async toggleStatus(id: number, currentUserId?: number) {
-    if (currentUserId && id === currentUserId) {
-      throw new BadRequestException('You cannot deactivate your own account');
-    }
+  async toggleStatus(id: number) {
     const user = await this.findOne(id);
-    if (user.email === 'admin@assetflow.com' && user.isActive) {
-      throw new BadRequestException('The primary system administrator cannot be deactivated');
-    }
-    const newStatus = !user.isActive;
-
-    // Also sync linked employee active status
-    const existingUser = await this.prisma.user.findUnique({
-      where: { id },
-      include: { employee: true },
-    });
-    const linkedEmployeeId = existingUser?.employeeId ?? existingUser?.employee?.id;
-    if (linkedEmployeeId) {
-      try {
-        await this.prisma.employee.update({
-          where: { id: linkedEmployeeId },
-          data: { isActive: newStatus },
-        });
-      } catch {
-        // If employee status update fails, proceed
-      }
-    }
-
     return this.prisma.user.update({
       where: { id },
-      data: { isActive: newStatus },
+      data: { isActive: !user.isActive },
       select: {
         id: true,
         email: true,

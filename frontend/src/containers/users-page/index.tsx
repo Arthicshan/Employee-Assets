@@ -17,26 +17,15 @@ import {
   Search,
   AlertCircle,
   Shield,
-  ShieldAlert,
   Briefcase,
   ToggleLeft,
   ToggleRight,
 } from 'lucide-react';
 import { SystemUser } from '@/types';
 import { sessionManager } from '@/libs/api/session-storage';
-import { useSession } from '@/libs/api/use-session';
 
 export const UsersPageContainer: React.FC = () => {
-  const sessionUser = useSession();
-  const currentLoggedInUser = sessionUser || sessionManager.getUser();
-
-  const isSelf = (user?: SystemUser | null) => {
-    if (!user || !currentLoggedInUser) return false;
-    return (
-      user.id === currentLoggedInUser.id ||
-      user.email.toLowerCase() === currentLoggedInUser.email?.toLowerCase()
-    );
-  };
+  const currentLoggedInUser = sessionManager.getUser();
   const {
     users,
     isLoading,
@@ -111,38 +100,32 @@ export const UsersPageContainer: React.FC = () => {
     },
     {
       header: 'Active Status',
-      accessor: (row) => {
-        const selfUser = isSelf(row);
-        return (
-          <button
-            type="button"
-            disabled={selfUser}
-            onClick={() => !selfUser && handleToggleStatus(row)}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
-              selfUser ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:shadow-xs'
-            } ${
-              row.isActive
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-            }`}
-            title={selfUser ? 'You cannot deactivate your own account' : 'Click to toggle Active / Deactive status'}
-          >
-            {row.isActive ? (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Active</span>
-                <ToggleRight className="w-3.5 h-3.5 text-emerald-600 ml-0.5" />
-              </>
-            ) : (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                <span>Deactive</span>
-                <ToggleLeft className="w-3.5 h-3.5 text-rose-600 ml-0.5" />
-              </>
-            )}
-          </button>
-        );
-      },
+      accessor: (row) => (
+        <button
+          type="button"
+          onClick={() => handleToggleStatus(row)}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+            row.isActive
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+              : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+          }`}
+          title="Click to toggle Active / Deactive status"
+        >
+          {row.isActive ? (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Active</span>
+              <ToggleRight className="w-3.5 h-3.5 text-emerald-600 ml-0.5" />
+            </>
+          ) : (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              <span>Deactive</span>
+              <ToggleLeft className="w-3.5 h-3.5 text-rose-600 ml-0.5" />
+            </>
+          )}
+        </button>
+      ),
     },
     {
       header: 'Actions',
@@ -287,26 +270,17 @@ export const UsersPageContainer: React.FC = () => {
               value={formData.position || ''}
               onChange={(e) => setFormData({ ...formData, position: e.target.value })}
             />
-            <div>
-              <Select
-                label="System Role"
-                required
-                disabled={isSelf(editingUser)}
-                options={[
-                  { label: 'ADMIN — Full System Access', value: 'ADMIN' },
-                  { label: 'MANAGER — Operational & Assignment Access', value: 'MANAGER' },
-                  { label: 'EMPLOYEE — Self-Service Portal Access', value: 'EMPLOYEE' },
-                ]}
-                value={formData.role || 'EMPLOYEE'}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'MANAGER' | 'EMPLOYEE' })}
-              />
-              {isSelf(editingUser) && (
-                <p className="text-[11px] text-amber-600 font-medium mt-1.5 flex items-center gap-1">
-                  <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
-                  <span>You cannot change your own role</span>
-                </p>
-              )}
-            </div>
+            <Select
+              label="System Role"
+              required
+              options={[
+                { label: 'ADMIN — Full System Access', value: 'ADMIN' },
+                { label: 'MANAGER — Operational & Assignment Access', value: 'MANAGER' },
+                { label: 'EMPLOYEE — Self-Service Portal Access', value: 'EMPLOYEE' },
+              ]}
+              value={formData.role || 'EMPLOYEE'}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'MANAGER' | 'EMPLOYEE' })}
+            />
           </div>
 
           {/* Active / Deactive Switch */}
@@ -314,31 +288,24 @@ export const UsersPageContainer: React.FC = () => {
             <div>
               <p className="text-xs font-semibold text-slate-800">Account Access Status</p>
               <p className="text-[11px] text-slate-500 mt-0.5">
-                {isSelf(editingUser)
-                  ? 'You cannot deactivate your own account.'
-                  : formData.isActive !== false
+                {formData.isActive !== false
                   ? 'User is active and allowed to sign in to the platform.'
                   : 'User is deactivated and blocked from authentication.'}
               </p>
             </div>
             <button
               type="button"
-              disabled={isSelf(editingUser)}
               onClick={() =>
-                !isSelf(editingUser) &&
                 setFormData({
                   ...formData,
                   isActive: formData.isActive === false ? true : false,
                 })
               }
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                isSelf(editingUser) ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-              } ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                 formData.isActive !== false
                   ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                   : 'bg-rose-100 text-rose-800 border-rose-300'
               }`}
-              title={isSelf(editingUser) ? 'You cannot deactivate your own account' : undefined}
             >
               {formData.isActive !== false ? 'Active' : 'Deactive'}
             </button>

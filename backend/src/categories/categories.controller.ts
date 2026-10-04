@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -55,6 +56,7 @@ export class CategoriesController {
     return this.categoriesService.create(data);
   }
 
+  @Put(':id')
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update an asset category (Admin only)' })

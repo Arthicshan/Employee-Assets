@@ -31,17 +31,27 @@ export class AssetService {
     return asset;
   }
 
-  private async validateCategory(tx: Prisma.TransactionClient, name: string) {
-    const category = await tx.assetCategory.findUnique({where: {name}});
+  private async validateCategory(tx: Prisma.TransactionClient, name: string): Promise<string> {
+    const trimmed = name?.trim();
+    if (!trimmed) throw new BadRequestException('Select an active asset category');
+    const category = await tx.assetCategory.findFirst({
+      where: {
+        name: {
+          equals: trimmed,
+          mode: 'insensitive',
+        },
+      },
+    });
     if (!category || !category.active) throw new BadRequestException('Select an active asset category');
+    return category.name;
   }
 
   async create(data: CreateAssetDto) {
     if (data.status === 'assigned') throw new BadRequestException('Use the assignment workflow to assign assets');
     return this.prisma.$transaction(async tx => {
-      await this.validateCategory(tx, data.category);
+      const canonicalCategory = await this.validateCategory(tx, data.category);
       const asset = await tx.asset.create({data: {
-        assetTag: data.assetTag, name: data.name, category: data.category, brand: data.brand, model: data.model, condition: data.condition, notes: data.notes, purchasePrice: data.purchasePrice, status: data.status || 'available', serialNumber: data.serialNumber?.trim() || null,
+        assetTag: data.assetTag, name: data.name, category: canonicalCategory, brand: data.brand, model: data.model, condition: data.condition, notes: data.notes, purchasePrice: data.purchasePrice, status: data.status || 'available', serialNumber: data.serialNumber?.trim() || null,
         purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null,
         warrantyExpiryDate: data.warrantyExpiryDate ? new Date(data.warrantyExpiryDate) : null,
       }});
@@ -54,14 +64,17 @@ export class AssetService {
     return this.prisma.$transaction(async tx => {
       const asset = await tx.asset.findUnique({where: {id}});
       if (!asset) throw new NotFoundException(`Asset with ID ${id} not found`);
-      if (data.category && data.category !== asset.category) await this.validateCategory(tx, data.category);
+      let category = asset.category;
+      if (data.category) {
+        category = await this.validateCategory(tx, data.category);
+      }
       const active = await tx.assetAssignment.findFirst({where: {assetId: id, status: 'ACTIVE'}});
       const status = data.status || asset.status;
       if (status === 'assigned' && asset.status !== 'assigned') throw new BadRequestException('Use the assignment workflow to assign assets');
       if (active && status !== asset.status && status !== 'lost') throw new BadRequestException('Return this asset before changing its status');
       if (!active && status === 'assigned') throw new BadRequestException('Assigned assets require an active assignment');
       const updated = await tx.asset.update({where: {id}, data: {
-        assetTag: data.assetTag, name: data.name, category: data.category, brand: data.brand, model: data.model, condition: data.condition, notes: data.notes, purchasePrice: data.purchasePrice, status: data.status,
+        assetTag: data.assetTag, name: data.name, category, brand: data.brand, model: data.model, condition: data.condition, notes: data.notes, purchasePrice: data.purchasePrice, status: data.status,
         ...(data.serialNumber !== undefined && {serialNumber: data.serialNumber?.trim() || null}),
         ...(data.purchaseDate !== undefined && {purchaseDate: data.purchaseDate ? new Date(data.purchaseDate) : null}),
         ...(data.warrantyExpiryDate !== undefined && {warrantyExpiryDate: data.warrantyExpiryDate ? new Date(data.warrantyExpiryDate) : null}),
