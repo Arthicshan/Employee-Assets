@@ -95,16 +95,23 @@ export class UsersService {
   async update(id: number, dto: UpdateUserDto, currentUserId?: number) {
     const user = await this.findOne(id);
 
-    if (currentUserId && id === currentUserId && dto.isActive === false) {
-      throw new BadRequestException('You cannot deactivate your own account');
+    // Prevent modifying admin role
+    if (user.role === 'ADMIN' && dto.role && dto.role !== 'ADMIN') {
+      throw new BadRequestException('Administrator accounts are protected and cannot have their role changed');
     }
 
-    if (dto.isActive === false && user.role === 'ADMIN' && user.isActive) {
-      const activeAdminCount = await this.prisma.user.count({
-        where: { role: 'ADMIN', isActive: true },
-      });
-      if (activeAdminCount <= 1) {
-        throw new BadRequestException('Cannot deactivate the last active administrator');
+    // Prevent user from changing their own role
+    if (currentUserId && id === currentUserId && dto.role && dto.role !== user.role) {
+      throw new BadRequestException('You cannot change your own system role');
+    }
+
+    // Prevent deactivating an administrator or own account
+    if (dto.isActive === false) {
+      if (currentUserId && id === currentUserId) {
+        throw new BadRequestException('You cannot deactivate your own account');
+      }
+      if (user.role === 'ADMIN') {
+        throw new BadRequestException('Administrator accounts are protected and cannot be deactivated');
       }
     }
 
@@ -155,13 +162,8 @@ export class UsersService {
       throw new BadRequestException('You cannot deactivate your own account');
     }
     const user = await this.findOne(id);
-    if (user.role === 'ADMIN' && user.isActive) {
-      const activeAdminCount = await this.prisma.user.count({
-        where: { role: 'ADMIN', isActive: true },
-      });
-      if (activeAdminCount <= 1) {
-        throw new BadRequestException('Cannot deactivate the last active administrator');
-      }
+    if (user.role === 'ADMIN') {
+      throw new BadRequestException('Administrator accounts are protected and cannot be deactivated');
     }
     return this.prisma.user.update({
       where: { id },
@@ -185,7 +187,10 @@ export class UsersService {
       throw new BadRequestException('You cannot delete your own admin account');
     }
 
-    await this.findOne(id);
+    const user = await this.findOne(id);
+    if (user.role === 'ADMIN') {
+      throw new BadRequestException('Administrator accounts are protected and cannot be deleted');
+    }
 
     await this.prisma.user.delete({ where: { id } });
     return { id, deleted: true };
