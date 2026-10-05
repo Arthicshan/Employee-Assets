@@ -92,8 +92,21 @@ export class UsersService {
     });
   }
 
-  async update(id: number, dto: UpdateUserDto) {
-    await this.findOne(id);
+  async update(id: number, dto: UpdateUserDto, currentUserId?: number) {
+    const user = await this.findOne(id);
+
+    if (currentUserId && id === currentUserId && dto.isActive === false) {
+      throw new BadRequestException('You cannot deactivate your own account');
+    }
+
+    if (dto.isActive === false && user.role === 'ADMIN' && user.isActive) {
+      const activeAdminCount = await this.prisma.user.count({
+        where: { role: 'ADMIN', isActive: true },
+      });
+      if (activeAdminCount <= 1) {
+        throw new BadRequestException('Cannot deactivate the last active administrator');
+      }
+    }
 
     if (dto.email) {
       const existing = await this.prisma.user.findFirst({
@@ -137,8 +150,19 @@ export class UsersService {
     });
   }
 
-  async toggleStatus(id: number) {
+  async toggleStatus(id: number, currentUserId?: number) {
+    if (currentUserId && id === currentUserId) {
+      throw new BadRequestException('You cannot deactivate your own account');
+    }
     const user = await this.findOne(id);
+    if (user.role === 'ADMIN' && user.isActive) {
+      const activeAdminCount = await this.prisma.user.count({
+        where: { role: 'ADMIN', isActive: true },
+      });
+      if (activeAdminCount <= 1) {
+        throw new BadRequestException('Cannot deactivate the last active administrator');
+      }
+    }
     return this.prisma.user.update({
       where: { id },
       data: { isActive: !user.isActive },
