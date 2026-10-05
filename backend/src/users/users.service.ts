@@ -92,28 +92,8 @@ export class UsersService {
     });
   }
 
-  async update(id: number, dto: UpdateUserDto, currentUserId?: number) {
-    const user = await this.findOne(id);
-
-    // Prevent modifying admin role
-    if (user.role === 'ADMIN' && dto.role && dto.role !== 'ADMIN') {
-      throw new BadRequestException('Administrator accounts are protected and cannot have their role changed');
-    }
-
-    // Prevent user from changing their own role
-    if (currentUserId && id === currentUserId && dto.role && dto.role !== user.role) {
-      throw new BadRequestException('You cannot change your own system role');
-    }
-
-    // Prevent deactivating an administrator or own account
-    if (dto.isActive === false) {
-      if (currentUserId && id === currentUserId) {
-        throw new BadRequestException('You cannot deactivate your own account');
-      }
-      if (user.role === 'ADMIN') {
-        throw new BadRequestException('Administrator accounts are protected and cannot be deactivated');
-      }
-    }
+  async update(id: number, dto: UpdateUserDto) {
+    await this.findOne(id);
 
     if (dto.email) {
       const existing = await this.prisma.user.findFirst({
@@ -157,14 +137,8 @@ export class UsersService {
     });
   }
 
-  async toggleStatus(id: number, currentUserId?: number) {
-    if (currentUserId && id === currentUserId) {
-      throw new BadRequestException('You cannot deactivate your own account');
-    }
+  async toggleStatus(id: number) {
     const user = await this.findOne(id);
-    if (user.role === 'ADMIN') {
-      throw new BadRequestException('Administrator accounts are protected and cannot be deactivated');
-    }
     return this.prisma.user.update({
       where: { id },
       data: { isActive: !user.isActive },
@@ -187,10 +161,7 @@ export class UsersService {
       throw new BadRequestException('You cannot delete your own admin account');
     }
 
-    const user = await this.findOne(id);
-    if (user.role === 'ADMIN') {
-      throw new BadRequestException('Administrator accounts are protected and cannot be deleted');
-    }
+    await this.findOne(id);
 
     await this.prisma.user.delete({ where: { id } });
     return { id, deleted: true };

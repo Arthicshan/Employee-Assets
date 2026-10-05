@@ -8,6 +8,7 @@ import { assetsService } from '@/services/assets/assets.service';
 import { categoriesService } from '@/services/categories/categories.service';
 import { Asset, AssetCategory, CreateAssetDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
 
 export function useAssetsPage() {
   const searchParams = useSearchParams();
@@ -113,17 +114,22 @@ export function useAssetsPage() {
       if (editingAsset) {
         await assetsService.updateAsset(editingAsset.id, formData);
         setEditingAsset(null);
+        toast.success(`Asset "${formData.name}" updated successfully`);
       } else {
         await assetsService.createAsset(formData);
         setIsCreateOpen(false);
+        toast.success(`Asset "${formData.name}" registered successfully`);
       }
       await fetchAssets();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
+        toast.error(err.message, 'Validation Failed');
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save asset');
+        const msg = (err instanceof Error ? err.message : undefined) || 'Failed to save asset';
+        setError(msg);
+        toast.error(msg, 'Save Error');
       }
     } finally {
       setIsSubmitting(false);
@@ -132,13 +138,32 @@ export function useAssetsPage() {
 
   const handleDelete = async () => {
     if (!deletingAsset) return;
+    if (deletingAsset.status === 'under_repair') {
+      toast.error('Assets currently under repair cannot be deleted or retired');
+      setDeletingAsset(null);
+      return;
+    }
+    if (deletingAsset.status === 'assigned') {
+      toast.error('Assigned assets cannot be deleted or retired. Please return the asset first');
+      setDeletingAsset(null);
+      return;
+    }
+    if (deletingAsset.status === 'retired') {
+      toast.error('Asset is already retired');
+      setDeletingAsset(null);
+      return;
+    }
+    const assetName = deletingAsset.name;
     setIsSubmitting(true);
     try {
       await assetsService.deleteAsset(deletingAsset.id);
       setDeletingAsset(null);
+      toast.success(`Asset "${assetName}" retired successfully`);
       await fetchAssets();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete asset');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to retire asset';
+      setError(msg);
+      toast.error(msg, 'Retire Error');
     } finally {
       setIsSubmitting(false);
     }

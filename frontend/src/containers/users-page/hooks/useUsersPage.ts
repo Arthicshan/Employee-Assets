@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { usersService } from '@/services/users/users.service';
 import { SystemUser, CreateSystemUserDto, UpdateSystemUserDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
-import { toast } from '@/components/Toast';
 
 export function useUsersPage() {
   const [users, setUsers] = useState<SystemUser[]>([]);
@@ -85,30 +84,25 @@ export function useUsersPage() {
           firstName: formData.firstName,
           lastName: formData.lastName,
           position: formData.position,
-          role: editingUser.role === 'ADMIN' ? 'ADMIN' : formData.role,
-          isActive: editingUser.role === 'ADMIN' ? true : formData.isActive,
+          role: formData.role,
+          isActive: formData.isActive,
         };
         if (formData.password) {
           updatePayload.password = formData.password;
         }
         await usersService.updateUser(editingUser.id, updatePayload);
         setEditingUser(null);
-        toast.success(`User "${formData.firstName} ${formData.lastName}" updated successfully`);
       } else {
         await usersService.createUser(formData);
         setIsCreateOpen(false);
-        toast.success(`User "${formData.firstName} ${formData.lastName}" created successfully`);
       }
       await fetchUsers();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
         if (err.validationErrors) setValidationErrors(err.validationErrors);
-        toast.error(err.message, 'Validation Failed');
       } else {
-        const msg = (err instanceof Error ? err.message : undefined) || 'Failed to save user account';
-        setError(msg);
-        toast.error(msg, 'Save Error');
+        setError((err instanceof Error ? err.message : undefined) || 'Failed to save user account');
       }
     } finally {
       setIsSubmitting(false);
@@ -116,39 +110,23 @@ export function useUsersPage() {
   };
 
   const handleToggleStatus = async (user: SystemUser) => {
-    if (user.role === 'ADMIN' || user.email === 'admin@assetflow.com') {
-      toast.warning('Administrator accounts are protected and cannot be deactivated');
-      return;
-    }
     try {
       await usersService.toggleStatus(user.id);
-      toast.success(`User "${user.firstName} ${user.lastName}" status updated`);
       await fetchUsers();
     } catch (err: unknown) {
-      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to update user status';
-      setError(msg);
-      toast.error(msg, 'Status Error');
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to update user status');
     }
   };
 
   const handleDelete = async () => {
     if (!deletingUser) return;
-    if (deletingUser.role === 'ADMIN' || deletingUser.email === 'admin@assetflow.com') {
-      toast.error('Administrator accounts are protected and cannot be deleted');
-      setDeletingUser(null);
-      return;
-    }
-    const userName = `${deletingUser.firstName} ${deletingUser.lastName}`;
     setIsSubmitting(true);
     try {
       await usersService.deleteUser(deletingUser.id);
       setDeletingUser(null);
-      toast.success(`User "${userName}" deleted successfully`);
       await fetchUsers();
     } catch (err: unknown) {
-      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete user account';
-      setError(msg);
-      toast.error(msg, 'Delete Error');
+      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete user account');
     } finally {
       setIsSubmitting(false);
     }

@@ -100,73 +100,56 @@ export const UsersPageContainer: React.FC = () => {
     },
     {
       header: 'Active Status',
-      accessor: (row) => {
-        const isAdminUser = row.role === 'ADMIN' || row.email === 'admin@assetflow.com';
-        if (isAdminUser) {
-          return (
-            <span
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 select-none cursor-default"
-              title="Administrator accounts are protected and cannot be deactivated"
-            >
+      accessor: (row) => (
+        <button
+          type="button"
+          onClick={() => handleToggleStatus(row)}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+            row.isActive
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+              : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+          }`}
+          title="Click to toggle Active / Deactive status"
+        >
+          {row.isActive ? (
+            <>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>Active (Protected)</span>
-            </span>
-          );
-        }
-        return (
-          <button
-            type="button"
-            onClick={() => handleToggleStatus(row)}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-              row.isActive
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-            }`}
-            title="Click to toggle Active / Deactive status"
-          >
-            {row.isActive ? (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                <span>Active</span>
-                <ToggleRight className="w-3.5 h-3.5 text-emerald-600 ml-0.5" />
-              </>
-            ) : (
-              <>
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                <span>Deactive</span>
-                <ToggleLeft className="w-3.5 h-3.5 text-rose-600 ml-0.5" />
-              </>
-            )}
-          </button>
-        );
-      },
+              <span>Active</span>
+              <ToggleRight className="w-3.5 h-3.5 text-emerald-600 ml-0.5" />
+            </>
+          ) : (
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              <span>Deactive</span>
+              <ToggleLeft className="w-3.5 h-3.5 text-rose-600 ml-0.5" />
+            </>
+          )}
+        </button>
+      ),
     },
     {
       header: 'Actions',
       className: 'text-right',
-      accessor: (row) => {
-        const isAdminUser = row.role === 'ADMIN' || row.email === 'admin@assetflow.com';
-        return (
-          <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+      accessor: (row) => (
+        <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => openEditModal(row)}
+            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            title="Edit User Position & Role"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+          {currentLoggedInUser?.id !== row.id && (
             <button
-              onClick={() => openEditModal(row)}
-              className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
-              title="Edit User Position & Profile"
+              onClick={() => setDeletingUser(row)}
+              className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+              title="Delete User"
             >
-              <Pencil className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" />
             </button>
-            {!isAdminUser && currentLoggedInUser?.id !== row.id && (
-              <button
-                onClick={() => setDeletingUser(row)}
-                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                title="Delete User"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        );
-      },
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -287,75 +270,46 @@ export const UsersPageContainer: React.FC = () => {
               value={formData.position || ''}
               onChange={(e) => setFormData({ ...formData, position: e.target.value })}
             />
-            {editingUser?.role === 'ADMIN' ? (
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">System Role</label>
-                <div className="flex items-center justify-between p-2.5 rounded-lg border border-blue-200 bg-blue-50/70 text-sm">
-                  <span className="flex items-center gap-1.5 font-bold text-blue-800 text-xs">
-                    <Shield className="w-3.5 h-3.5 text-blue-600" />
-                    ADMIN — Full System Access
-                  </span>
-                  <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">
-                    Protected Role
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <Select
-                label="System Role"
-                required
-                options={[
-                  { label: 'ADMIN — Full System Access', value: 'ADMIN' },
-                  { label: 'MANAGER — Operational & Assignment Access', value: 'MANAGER' },
-                  { label: 'EMPLOYEE — Self-Service Portal Access', value: 'EMPLOYEE' },
-                ]}
-                value={formData.role || 'EMPLOYEE'}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'MANAGER' | 'EMPLOYEE' })}
-              />
-            )}
+            <Select
+              label="System Role"
+              required
+              options={[
+                { label: 'ADMIN — Full System Access', value: 'ADMIN' },
+                { label: 'MANAGER — Operational & Assignment Access', value: 'MANAGER' },
+                { label: 'EMPLOYEE — Self-Service Portal Access', value: 'EMPLOYEE' },
+              ]}
+              value={formData.role || 'EMPLOYEE'}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'MANAGER' | 'EMPLOYEE' })}
+            />
           </div>
 
           {/* Active / Deactive Switch */}
-          {editingUser?.role === 'ADMIN' ? (
-            <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 bg-slate-50">
-              <div>
-                <p className="text-xs font-semibold text-slate-800">Account Access Status</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  Administrator accounts are protected and always remain active.
-                </p>
-              </div>
-              <span className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                Active (Protected)
-              </span>
+          <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 bg-slate-50">
+            <div>
+              <p className="text-xs font-semibold text-slate-800">Account Access Status</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {formData.isActive !== false
+                  ? 'User is active and allowed to sign in to the platform.'
+                  : 'User is deactivated and blocked from authentication.'}
+              </p>
             </div>
-          ) : (
-            <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 bg-slate-50">
-              <div>
-                <p className="text-xs font-semibold text-slate-800">Account Access Status</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  {formData.isActive !== false
-                    ? 'User is active and allowed to sign in to the platform.'
-                    : 'User is deactivated and blocked from authentication.'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    isActive: formData.isActive === false ? true : false,
-                  })
-                }
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                  formData.isActive !== false
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                    : 'bg-rose-100 text-rose-800 border-rose-300'
-                }`}
-              >
-                {formData.isActive !== false ? 'Active' : 'Deactive'}
-              </button>
-            </div>
-          )}
+            <button
+              type="button"
+              onClick={() =>
+                setFormData({
+                  ...formData,
+                  isActive: formData.isActive === false ? true : false,
+                })
+              }
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                formData.isActive !== false
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : 'bg-rose-100 text-rose-800 border-rose-300'
+              }`}
+            >
+              {formData.isActive !== false ? 'Active' : 'Deactive'}
+            </button>
+          </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Button
