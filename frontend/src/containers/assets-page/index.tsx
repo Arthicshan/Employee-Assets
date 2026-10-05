@@ -138,42 +138,13 @@ export const AssetsPageContainer: React.FC = () => {
               >
                 <Pencil className="w-4 h-4" />
               </button>
-              {row.status === 'under_repair' ? (
-                <button
-                  type="button"
-                  disabled
-                  className="p-1.5 text-slate-300 cursor-not-allowed rounded-md transition-colors"
-                  title="Cannot delete or retire asset while under repair"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              ) : row.status === 'assigned' ? (
-                <button
-                  type="button"
-                  disabled
-                  className="p-1.5 text-slate-300 cursor-not-allowed rounded-md transition-colors"
-                  title="Cannot delete or retire assigned asset. Please return it first"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              ) : row.status === 'retired' ? (
-                <button
-                  type="button"
-                  disabled
-                  className="p-1.5 text-slate-300 cursor-not-allowed rounded-md transition-colors"
-                  title="Asset is already retired"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setDeletingAsset(row)}
-                  className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                  title="Retire Asset"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
+              <button
+                onClick={() => setDeletingAsset(row)}
+                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                title="Retire Asset"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </>
           )}
         </div>
@@ -334,7 +305,7 @@ export const AssetsPageContainer: React.FC = () => {
                   { label: 'Damaged', value: 'damaged' },
                   { label: 'Under Repair', value: 'under_repair' },
                   { label: 'Lost', value: 'lost' },
-                  ...(editingAsset?.status !== 'under_repair' && editingAsset?.status !== 'assigned' ? [{ label: 'Retired', value: 'retired' }] : []),
+                  { label: 'Retired', value: 'retired' },
                 ]}
                 value={formData.status || 'available'}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}

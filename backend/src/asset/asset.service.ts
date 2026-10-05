@@ -73,11 +73,6 @@ export class AssetService {
       if (status === 'assigned' && asset.status !== 'assigned') throw new BadRequestException('Use the assignment workflow to assign assets');
       if (active && status !== asset.status && status !== 'lost') throw new BadRequestException('Return this asset before changing its status');
       if (!active && status === 'assigned') throw new BadRequestException('Assigned assets require an active assignment');
-      if (status === 'retired') {
-        if (asset.status === 'under_repair') throw new BadRequestException('Assets currently under repair cannot be retired or deleted. Please complete the repair process first.');
-        if (asset.status === 'assigned') throw new BadRequestException('Assigned assets cannot be retired or deleted. Return the asset first.');
-        if (asset.status === 'retired') throw new BadRequestException('Asset is already retired.');
-      }
       const updated = await tx.asset.update({where: {id}, data: {
         assetTag: data.assetTag, name: data.name, category, brand: data.brand, model: data.model, condition: data.condition, notes: data.notes, purchasePrice: data.purchasePrice, status: data.status,
         ...(data.serialNumber !== undefined && {serialNumber: data.serialNumber?.trim() || null}),
@@ -90,16 +85,6 @@ export class AssetService {
   }
 
   async remove(id: number) {
-    const asset = await this.findOne(id);
-    if (asset.status === 'under_repair') {
-      throw new BadRequestException('Assets currently under repair cannot be retired or deleted. Please complete the repair process first.');
-    }
-    if (asset.status === 'assigned') {
-      throw new BadRequestException('Assigned assets cannot be retired or deleted. Return the asset first.');
-    }
-    if (asset.status === 'retired') {
-      throw new BadRequestException('Asset is already retired.');
-    }
     return this.update(id, {status: 'retired'});
   }
 
