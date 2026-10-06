@@ -266,3 +266,32 @@ Employee Asset & Inventory Management System is a full-stack application designe
 - NestJS
 - PostgreSQL
 - Prisma ORM
+
+
+## Getting Started
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- Node.js
+- PostgreSQL
+- npm
+
+### Installation
+
+1. Clone the repository.
+2. Install the required dependencies.
+3. Configure the environment variables.
+4. Set up the PostgreSQL database.
+5. Run the application in development mode.
+
+### Run the Project
+
+Frontend:
+
+npm run dev
+
+Backend:
+
+npm run start:dev
