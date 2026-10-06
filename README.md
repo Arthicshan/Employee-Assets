@@ -244,3 +244,25 @@ See [ASSESSMENT_AUDIT.md](ASSESSMENT_AUDIT.md) for the requirement matrix, fixes
 - Roles are ADMIN, MANAGER and EMPLOYEE, managed on the Users screen. Audit history is read-only.
 
 `npm run test:e2e` uses the configured PostgreSQL server with a unique temporary `assessment_test_<timestamp>` schema. An optional `TEST_DATABASE_URL` can target a separate test database. It does not seed or reset the app's working schema. Tests must use this runner. Directly running the existing seed script resets inventory, so use it only for a new/disposable database.
+
+## About the Project
+
+Employee Asset & Inventory Management System is a full-stack application designed to help organizations manage company assets efficiently.
+
+### Key Features
+
+- Asset registration and management
+- Employee management
+- Asset assignment and return tracking
+- Asset status and condition monitoring
+- Assignment history
+- Dashboard and inventory overview
+- Role-based access control
+- Search and filtering
+
+### Technology Stack
+
+- Next.js
+- NestJS
+- PostgreSQL
+- Prisma ORM
