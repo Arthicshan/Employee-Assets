@@ -295,3 +295,8 @@ npm run dev
 Backend:
 
 npm run start:dev
+
+
+## Contributing
+
+Contributions and suggestions are welcome. Please create a separate branch for your changes and submit a pull request for review.
