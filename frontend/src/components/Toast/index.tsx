@@ -54,12 +54,11 @@ export const toast = {
 };
 
 export const ToastContainer: React.FC = () => {
-  const [items, setItems] = useState<ToastItem[]>([]);
+  const [items, setItems] = useState<ToastItem[]>(() => [...toasts]);
 
   useEffect(() => {
     const listener = (newToasts: ToastItem[]) => setItems(newToasts);
     listeners.add(listener);
-    setItems([...toasts]);
     return () => {
       listeners.delete(listener);
     };
