@@ -17,7 +17,10 @@ describe('AssetService', () => {
       delete: jest.fn(),
     },
     $transaction: jest.fn((callback) => callback(mockPrisma)),
-    assetCategory: {findUnique: jest.fn().mockResolvedValue({name: 'Laptops', active: true})},
+    assetCategory: {
+      findUnique: jest.fn().mockResolvedValue({ name: 'Laptops', active: true }),
+      findFirst: jest.fn().mockResolvedValue({ name: 'Laptops', active: true }),
+    },
     assetHistory: {create: jest.fn()},
     employee: {
       findUnique: jest.fn(),
