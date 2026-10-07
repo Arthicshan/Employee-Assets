@@ -1,5 +1,3 @@
-import { Query } from '@nestjs/common';
-import { ListQueryDto } from '../common/dto/list-query.dto';
 import {
   Controller,
   Get,
@@ -8,10 +6,12 @@ import {
   Delete,
   Param,
   Body,
+  Query,
   UseGuards,
   Req,
   ParseIntPipe,
 } from '@nestjs/common';
+import { ListQueryDto } from '../common/dto/list-query.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
