@@ -1,16 +1,17 @@
-import { Query, ParseIntPipe as IdPipe } from '@nestjs/common';
-import { ListQueryDto } from '../common/dto/list-query.dto';
 import {
   Body,
   Controller,
   Delete,
   Get,
   Param,
+  ParseIntPipe as IdPipe,
   Patch,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
+import { ListQueryDto } from '../common/dto/list-query.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -40,8 +41,8 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get category details by ID (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Category details returned' })
   @ApiResponse({ status: 404, description: 'Category not found' })
-  findOne(@Param('id', IdPipe) id: string) {
-    return this.categoriesService.findOne(Number(id));
+  findOne(@Param('id', IdPipe) id: number) {
+    return this.categoriesService.findOne(id);
   }
 
   @Post()
@@ -63,11 +64,11 @@ export class CategoriesController {
   @ApiResponse({ status: 200, description: 'Category updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   update(
-    @Param('id', IdPipe) id: string,
+    @Param('id', IdPipe) id: number,
     @Body()
     data: UpdateCategoryDto,
   ) {
-    return this.categoriesService.update(Number(id), data);
+    return this.categoriesService.update(id, data);
   }
 
   @Delete(':id')
@@ -75,7 +76,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Delete an asset category (Admin only)' })
   @ApiResponse({ status: 200, description: 'Category deleted successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  remove(@Param('id', IdPipe) id: string) {
-    return this.categoriesService.remove(Number(id));
+  remove(@Param('id', IdPipe) id: number) {
+    return this.categoriesService.remove(id);
   }
 }
