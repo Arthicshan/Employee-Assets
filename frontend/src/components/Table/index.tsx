@@ -58,8 +58,8 @@ export function Table<T>({
   return (
     <div className="w-full bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
       {sortable && fields.length > 0 && <div className="flex gap-3 items-center px-5 py-3 border-b border-slate-100 text-xs">
-        <label>Sort by <select aria-label="Sort by" value={sort} onChange={e => {setSort(e.target.value); setPage({page: 1, data});}} className="ml-2 border rounded p-1"><option value="">Default order</option>{fields.map(field => <option key={field} value={field}>{field.replace(/([A-Z])/g, ' $1')}</option>)}</select></label>
-        <button type="button" onClick={() => setDescending(!descending)}>{descending ? 'Descending' : 'Ascending'}</button>
+        <label className="text-slate-600 font-medium">Sort by <select aria-label="Sort by" value={sort} onChange={e => {setSort(e.target.value); setPage({page: 1, data});}} className="ml-2 border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-700 shadow-2xs"><option value="">Default order</option>{fields.map(field => <option key={field} value={field}>{field.replace(/([A-Z])/g, ' $1')}</option>)}</select></label>
+        <button type="button" onClick={() => setDescending(!descending)} className="px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors shadow-2xs">{descending ? 'Descending' : 'Ascending'}</button>
       </div>}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">

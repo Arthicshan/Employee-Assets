@@ -28,6 +28,7 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, onPageChange }) =>
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
+          aria-label="Previous page"
           className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -38,6 +39,7 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, onPageChange }) =>
         <button
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
+          aria-label="Next page"
           className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           <ChevronRight className="w-4 h-4" />
