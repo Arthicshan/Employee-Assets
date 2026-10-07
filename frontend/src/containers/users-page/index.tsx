@@ -22,10 +22,10 @@ import {
   ToggleRight,
 } from 'lucide-react';
 import { SystemUser } from '@/types';
-import { sessionManager } from '@/libs/api/session-storage';
+import { useSession } from '@/libs/api/use-session';
 
 export const UsersPageContainer: React.FC = () => {
-  const currentLoggedInUser = sessionManager.getUser();
+  const currentLoggedInUser = useSession();
   const {
     users,
     isLoading,

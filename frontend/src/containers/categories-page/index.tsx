@@ -10,10 +10,11 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { Badge } from '@/components/Badge';
 import { Layers, Plus, Pencil, Trash2, AlertCircle } from 'lucide-react';
 import { AssetCategory } from '@/types';
-import { sessionManager } from '@/libs/api/session-storage';
+import { useSession } from '@/libs/api/use-session';
 
 export const CategoriesPageContainer: React.FC = () => {
-  const isAdmin = sessionManager.getUser()?.role === 'ADMIN';
+  const session = useSession();
+  const isAdmin = session?.role === 'ADMIN';
   const {
 
     categories,
