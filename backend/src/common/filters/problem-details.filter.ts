@@ -41,10 +41,10 @@ export class ProblemDetailsFilter implements ExceptionFilter {
         problemDetails.detail = 'Validation failed';
       }
 
-      response.status(status).json(problemDetails);
+      response.status(status).setHeader('Content-Type', 'application/problem+json').json(problemDetails);
     } else {
       const status = HttpStatus.INTERNAL_SERVER_ERROR;
-      response.status(status).json({
+      response.status(status).setHeader('Content-Type', 'application/problem+json').json({
         type: 'https://api.assetflow.local/problems/internal-server-error',
         title: 'Internal Server Error',
         status: status,
