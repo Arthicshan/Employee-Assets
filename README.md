@@ -290,12 +290,45 @@ Make sure you have the following installed:
 
 Frontend:
 
+```bash
 npm run dev
+```
 
 Backend:
 
+```bash
 npm run start:dev
+```
 
+### Testing and Code Quality
+
+Run tests and verification commands in each package:
+
+Backend:
+
+```bash
+# Run unit test suite
+npm test
+
+# Run code linter
+npm run lint
+
+# Build production bundle
+npm run build
+```
+
+Frontend:
+
+```bash
+# Run ESLint
+npm run lint
+
+# Check TypeScript types
+npx tsc --noEmit
+
+# Build production bundle
+npm run build
+```
 
 ## Contributing
 
