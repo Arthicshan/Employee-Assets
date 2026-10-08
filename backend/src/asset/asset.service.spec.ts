@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 describe('AssetService', () => {
   let service: AssetService;
 
-  const mockPrisma = {
+  const mockPrisma: any = {
     asset: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
@@ -16,7 +16,7 @@ describe('AssetService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
-    $transaction: jest.fn((callback) => callback(mockPrisma)),
+    $transaction: jest.fn((callback: (tx: any) => any) => callback(mockPrisma)),
     assetCategory: {
       findUnique: jest.fn().mockResolvedValue({ name: 'Laptops', active: true }),
       findFirst: jest.fn().mockResolvedValue({ name: 'Laptops', active: true }),
