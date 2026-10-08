@@ -6,6 +6,9 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
+  Matches,
+  MinLength,
+  MaxLength,
 } from 'class-validator';
 
 export class CreateEmployeeDto {
@@ -17,14 +20,24 @@ export class CreateEmployeeDto {
 
   @ApiProperty({ example: 'Alice', description: 'First name' })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'First name is required' })
   @Transform(({value}) => typeof value === 'string' ? value.trim() : value)
+  @MinLength(2, { message: 'First name must be at least 2 characters' })
+  @MaxLength(50, { message: 'First name cannot exceed 50 characters' })
+  @Matches(/^[a-zA-Z\s'-]+$/, {
+    message: 'First name can only contain letters, spaces, hyphens, and apostrophes',
+  })
   firstName: string;
 
   @ApiProperty({ example: 'Johnson', description: 'Last name' })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Last name is required' })
   @Transform(({value}) => typeof value === 'string' ? value.trim() : value)
+  @MinLength(2, { message: 'Last name must be at least 2 characters' })
+  @MaxLength(50, { message: 'Last name cannot exceed 50 characters' })
+  @Matches(/^[a-zA-Z\s'-]+$/, {
+    message: 'Last name can only contain letters, spaces, hyphens, and apostrophes',
+  })
   lastName: string;
 
   @ApiProperty({ example: 'alice.johnson@company.com', description: 'Corporate email address' })

@@ -11,6 +11,7 @@ export function useUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<{ firstName?: string; lastName?: string }>({});
 
   // Search filter
   const [search, setSearch] = useState('');
@@ -55,6 +56,7 @@ export function useUsersPage() {
     setFormData(initialForm);
     setError(null);
     setValidationErrors([]);
+    setFieldErrors({});
     setIsCreateOpen(true);
   };
 
@@ -70,20 +72,59 @@ export function useUsersPage() {
     });
     setError(null);
     setValidationErrors([]);
+    setFieldErrors({});
+  };
+
+  const validateNameField = (name: string, fieldLabel: string = 'Name'): string | null => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return `${fieldLabel} is required`;
+    if (trimmed.length < 2) return `${fieldLabel} must be at least 2 characters long`;
+    if (trimmed.length > 50) return `${fieldLabel} cannot exceed 50 characters`;
+    if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) return `${fieldLabel} can only contain letters, spaces, hyphens, and apostrophes`;
+    if (!/[a-zA-Z]/.test(trimmed)) return `${fieldLabel} must contain at least one letter`;
+    return null;
+  };
+
+  const handleFieldChange = (field: 'firstName' | 'lastName', value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) {
+      const err = validateNameField(value, field === 'firstName' ? 'First name' : 'Last name');
+      setFieldErrors((prev) => ({ ...prev, [field]: err || undefined }));
+    }
+  };
+
+  const handleFieldBlur = (field: 'firstName' | 'lastName') => {
+    const err = validateNameField(formData[field], field === 'firstName' ? 'First name' : 'Last name');
+    setFieldErrors((prev) => ({ ...prev, [field]: err || undefined }));
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const firstNameError = validateNameField(formData.firstName, 'First name');
+    const lastNameError = validateNameField(formData.lastName, 'Last name');
+
+    if (firstNameError || lastNameError) {
+      setFieldErrors({
+        firstName: firstNameError || undefined,
+        lastName: lastNameError || undefined,
+      });
+      setError('Please fix the validation errors for First Name and Last Name.');
+      toast.error('First Name or Last Name is invalid.', 'Validation Error');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
     setValidationErrors([]);
+    setFieldErrors({});
 
     try {
       if (editingUser) {
         const updatePayload: UpdateSystemUserDto = {
           email: formData.email,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
           position: formData.position,
           role: formData.role,
           isActive: formData.role === 'ADMIN' ? true : formData.isActive,
@@ -92,15 +133,17 @@ export function useUsersPage() {
           updatePayload.password = formData.password;
         }
         await usersService.updateUser(editingUser.id, updatePayload);
-        toast.success(`User ${formData.firstName} ${formData.lastName} updated successfully.`, 'User Updated');
+        toast.success(`User ${updatePayload.firstName} ${updatePayload.lastName} updated successfully.`, 'User Updated');
         setEditingUser(null);
       } else {
         const createPayload: CreateSystemUserDto = {
           ...formData,
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
           isActive: formData.role === 'ADMIN' ? true : formData.isActive,
         };
         await usersService.createUser(createPayload);
-        toast.success(`User ${formData.firstName} ${formData.lastName} created successfully.`, 'User Created');
+        toast.success(`User ${createPayload.firstName} ${createPayload.lastName} created successfully.`, 'User Created');
         setIsCreateOpen(false);
       }
       await fetchUsers();
@@ -177,6 +220,9 @@ export function useUsersPage() {
     isLoading,
     error,
     validationErrors,
+    fieldErrors,
+    handleFieldChange,
+    handleFieldBlur,
     search,
     setSearch,
     isCreateOpen,

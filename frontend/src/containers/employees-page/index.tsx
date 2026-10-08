@@ -32,6 +32,9 @@ export const EmployeesPageContainer: React.FC = () => {
     setDeletingEmployee,
     formData,
     setFormData,
+    fieldErrors,
+    handleFieldChange,
+    handleFieldBlur,
     isSubmitting,
     openCreateModal,
     openEditModal,
@@ -231,14 +234,18 @@ export const EmployeesPageContainer: React.FC = () => {
               required
               placeholder="e.g. Alice"
               value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              error={fieldErrors.firstName}
+              onChange={(e) => handleFieldChange('firstName', e.target.value)}
+              onBlur={() => handleFieldBlur('firstName')}
             />
             <Input
               label="Last Name"
               required
               placeholder="e.g. Johnson"
               value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              error={fieldErrors.lastName}
+              onChange={(e) => handleFieldChange('lastName', e.target.value)}
+              onBlur={() => handleFieldBlur('lastName')}
             />
           </div>
 

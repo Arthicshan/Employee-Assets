@@ -41,6 +41,9 @@ export const UsersPageContainer: React.FC = () => {
     setDeletingUser,
     formData,
     setFormData,
+    fieldErrors,
+    handleFieldChange,
+    handleFieldBlur,
     isSubmitting,
     openCreateModal,
     openEditModal,
@@ -241,14 +244,18 @@ export const UsersPageContainer: React.FC = () => {
               required
               placeholder="e.g. Sarah"
               value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              error={fieldErrors.firstName}
+              onChange={(e) => handleFieldChange('firstName', e.target.value)}
+              onBlur={() => handleFieldBlur('firstName')}
             />
             <Input
               label="Last Name"
               required
               placeholder="e.g. Connor"
               value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              error={fieldErrors.lastName}
+              onChange={(e) => handleFieldChange('lastName', e.target.value)}
+              onBlur={() => handleFieldBlur('lastName')}
             />
           </div>
 
