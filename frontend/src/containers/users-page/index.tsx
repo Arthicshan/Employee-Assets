@@ -100,32 +100,41 @@ export const UsersPageContainer: React.FC = () => {
     },
     {
       header: 'Active Status',
-      accessor: (row) => (
-        <button
-          type="button"
-          onClick={() => handleToggleStatus(row)}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-            row.isActive
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-              : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
-          }`}
-          title="Click to toggle Active / Deactive status"
-        >
-          {row.isActive ? (
-            <>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>Active</span>
-              <ToggleRight className="w-3.5 h-3.5 text-emerald-600 ml-0.5" />
-            </>
-          ) : (
-            <>
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-              <span>Deactive</span>
-              <ToggleLeft className="w-3.5 h-3.5 text-rose-600 ml-0.5" />
-            </>
-          )}
-        </button>
-      ),
+      accessor: (row) =>
+        row.role === 'ADMIN' ? (
+          <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 select-none cursor-default"
+            title="Admin account is permanently active"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>Active</span>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => handleToggleStatus(row)}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+              row.isActive
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                : 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+            }`}
+            title="Click to toggle Active / Deactive status"
+          >
+            {row.isActive ? (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Active</span>
+                <ToggleRight className="w-3.5 h-3.5 text-emerald-600 ml-0.5" />
+              </>
+            ) : (
+              <>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                <span>Deactive</span>
+                <ToggleLeft className="w-3.5 h-3.5 text-rose-600 ml-0.5" />
+              </>
+            )}
+          </button>
+        ),
     },
     {
       header: 'Actions',
@@ -139,7 +148,7 @@ export const UsersPageContainer: React.FC = () => {
           >
             <Pencil className="w-4 h-4" />
           </button>
-          {currentLoggedInUser?.id !== row.id && (
+          {currentLoggedInUser?.id !== row.id && row.role !== 'ADMIN' && (
             <button
               onClick={() => setDeletingUser(row)}
               className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
@@ -279,37 +288,59 @@ export const UsersPageContainer: React.FC = () => {
                 { label: 'EMPLOYEE — Self-Service Portal Access', value: 'EMPLOYEE' },
               ]}
               value={formData.role || 'EMPLOYEE'}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'MANAGER' | 'EMPLOYEE' })}
+              onChange={(e) => {
+                const nextRole = e.target.value as 'ADMIN' | 'MANAGER' | 'EMPLOYEE';
+                setFormData({
+                  ...formData,
+                  role: nextRole,
+                  isActive: nextRole === 'ADMIN' ? true : formData.isActive,
+                });
+              }}
             />
           </div>
 
           {/* Active / Deactive Switch */}
-          <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 bg-slate-50">
-            <div>
-              <p className="text-xs font-semibold text-slate-800">Account Access Status</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                {formData.isActive !== false
-                  ? 'User is active and allowed to sign in to the platform.'
-                  : 'User is deactivated and blocked from authentication.'}
-              </p>
+          {editingUser?.role === 'ADMIN' || formData.role === 'ADMIN' ? (
+            <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 bg-slate-50">
+              <div>
+                <p className="text-xs font-semibold text-slate-800">Account Access Status</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Admin accounts have permanent system access and cannot be deactivated.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 select-none">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active
+              </span>
             </div>
-            <button
-              type="button"
-              onClick={() =>
-                setFormData({
-                  ...formData,
-                  isActive: formData.isActive === false ? true : false,
-                })
-              }
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                formData.isActive !== false
-                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                  : 'bg-rose-100 text-rose-800 border-rose-300'
-              }`}
-            >
-              {formData.isActive !== false ? 'Active' : 'Deactive'}
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between p-3.5 rounded-lg border border-slate-200 bg-slate-50">
+              <div>
+                <p className="text-xs font-semibold text-slate-800">Account Access Status</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {formData.isActive !== false
+                    ? 'User is active and allowed to sign in to the platform.'
+                    : 'User is deactivated and blocked from authentication.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    isActive: formData.isActive === false ? true : false,
+                  })
+                }
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                  formData.isActive !== false
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : 'bg-rose-100 text-rose-800 border-rose-300'
+                }`}
+              >
+                {formData.isActive !== false ? 'Active' : 'Deactive'}
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Button

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usersService } from '@/services/users/users.service';
 import { SystemUser, CreateSystemUserDto, UpdateSystemUserDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
 
 export function useUsersPage() {
   const [users, setUsers] = useState<SystemUser[]>([]);
@@ -65,7 +66,7 @@ export function useUsersPage() {
       lastName: user.lastName,
       position: user.position || '',
       role: user.role,
-      isActive: user.isActive,
+      isActive: user.role === 'ADMIN' ? true : user.isActive,
     });
     setError(null);
     setValidationErrors([]);
@@ -85,24 +86,33 @@ export function useUsersPage() {
           lastName: formData.lastName,
           position: formData.position,
           role: formData.role,
-          isActive: formData.isActive,
+          isActive: formData.role === 'ADMIN' ? true : formData.isActive,
         };
         if (formData.password) {
           updatePayload.password = formData.password;
         }
         await usersService.updateUser(editingUser.id, updatePayload);
+        toast.success(`User ${formData.firstName} ${formData.lastName} updated successfully.`, 'User Updated');
         setEditingUser(null);
       } else {
-        await usersService.createUser(formData);
+        const createPayload: CreateSystemUserDto = {
+          ...formData,
+          isActive: formData.role === 'ADMIN' ? true : formData.isActive,
+        };
+        await usersService.createUser(createPayload);
+        toast.success(`User ${formData.firstName} ${formData.lastName} created successfully.`, 'User Created');
         setIsCreateOpen(false);
       }
       await fetchUsers();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
+        toast.error(err.message, 'Failed to Save');
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save user account');
+        const msg = (err instanceof Error ? err.message : undefined) || 'Failed to save user account';
+        setError(msg);
+        toast.error(msg, 'Failed to Save');
       }
     } finally {
       setIsSubmitting(false);
@@ -110,23 +120,41 @@ export function useUsersPage() {
   };
 
   const handleToggleStatus = async (user: SystemUser) => {
+    if (user.role === 'ADMIN') {
+      toast.warning('Admin accounts cannot be deactivated.', 'Action Not Allowed');
+      return;
+    }
     try {
       await usersService.toggleStatus(user.id);
+      toast.success(
+        `User ${user.firstName} ${user.lastName} is now ${!user.isActive ? 'Active' : 'Deactivated'}.`,
+        'Status Updated'
+      );
       await fetchUsers();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to update user status');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to update user status';
+      setError(msg);
+      toast.error(msg, 'Status Update Failed');
     }
   };
 
   const handleDelete = async () => {
     if (!deletingUser) return;
+    if (deletingUser.role === 'ADMIN') {
+      toast.error('Admin accounts cannot be deleted.', 'Action Not Allowed');
+      setDeletingUser(null);
+      return;
+    }
     setIsSubmitting(true);
     try {
       await usersService.deleteUser(deletingUser.id);
+      toast.success(`User ${deletingUser.firstName} ${deletingUser.lastName} deleted successfully.`, 'User Deleted');
       setDeletingUser(null);
       await fetchUsers();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete user account');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete user account';
+      setError(msg);
+      toast.error(msg, 'Delete Failed');
     } finally {
       setIsSubmitting(false);
     }

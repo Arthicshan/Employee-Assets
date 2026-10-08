@@ -76,7 +76,7 @@ export class UsersService {
         lastName: dto.lastName.trim(),
         position: dto.position?.trim() || (dto.role === 'ADMIN' ? 'System Administrator' : dto.role === 'MANAGER' ? 'Asset Manager' : 'Employee'),
         role: dto.role || 'EMPLOYEE',
-        isActive: dto.isActive !== undefined ? dto.isActive : true,
+        isActive: dto.role === 'ADMIN' ? true : (dto.isActive !== undefined ? dto.isActive : true),
       },
       select: {
         id: true,
@@ -93,7 +93,11 @@ export class UsersService {
   }
 
   async update(id: number, dto: UpdateUserDto) {
-    await this.findOne(id);
+    const user = await this.findOne(id);
+    const targetRole = dto.role || user.role;
+    if (targetRole === 'ADMIN' && dto.isActive === false) {
+      throw new BadRequestException('Admin accounts cannot be deactivated');
+    }
 
     if (dto.email) {
       const existing = await this.prisma.user.findFirst({
@@ -121,7 +125,7 @@ export class UsersService {
         ...(dto.lastName && { lastName: dto.lastName.trim() }),
         ...(dto.position !== undefined && { position: dto.position }),
         ...(dto.role && { role: dto.role }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+        ...(dto.isActive !== undefined && { isActive: targetRole === 'ADMIN' ? true : dto.isActive }),
       },
       select: {
         id: true,
@@ -139,6 +143,9 @@ export class UsersService {
 
   async toggleStatus(id: number) {
     const user = await this.findOne(id);
+    if (user.role === 'ADMIN') {
+      throw new BadRequestException('Admin accounts cannot be deactivated');
+    }
     return this.prisma.user.update({
       where: { id },
       data: { isActive: !user.isActive },
@@ -161,7 +168,10 @@ export class UsersService {
       throw new BadRequestException('You cannot delete your own admin account');
     }
 
-    await this.findOne(id);
+    const user = await this.findOne(id);
+    if (user.role === 'ADMIN') {
+      throw new BadRequestException('Admin accounts cannot be deleted');
+    }
 
     await this.prisma.user.delete({ where: { id } });
     return { id, deleted: true };
