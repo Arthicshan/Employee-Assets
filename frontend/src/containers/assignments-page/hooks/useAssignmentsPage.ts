@@ -7,9 +7,11 @@ import { assetsService } from '@/services/assets/assets.service';
 import { employeesService } from '@/services/employees/employees.service';
 import { AssetAssignment, Asset, Employee, CreateAssignmentDto, CreateReturnDto, PaginatedMeta } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { useDebounce } from '@/hooks';
 
 export function useAssignmentsPage() {
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [assignments, setAssignments] = useState<AssetAssignment[]>([]);
@@ -40,6 +42,11 @@ export function useAssignmentsPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Reset to first page when search changes
+  useEffect(() => {
+    setMeta((prev) => (prev.page === 1 ? prev : { ...prev, page: 1 }));
+  }, [debouncedSearch]);
+
   const requestVersion = useRef(0);
   const fetchAssignments = useCallback(async () => {
     const version = ++requestVersion.current;
@@ -47,7 +54,7 @@ export function useAssignmentsPage() {
     setError(null);
     try {
       const response = await assignmentsService.getAssignments({
-        search: search || undefined, sortBy, sortOrder,
+        search: debouncedSearch || undefined, sortBy, sortOrder,
         status: statusFilter === 'ALL' ? undefined : statusFilter,
         page: meta.page,
         limit: meta.limit,
@@ -60,7 +67,7 @@ export function useAssignmentsPage() {
     } finally {
       if (version === requestVersion.current) setIsLoading(false);
     }
-  }, [statusFilter, meta.page, meta.limit, search, sortBy, sortOrder]);
+  }, [statusFilter, meta.page, meta.limit, debouncedSearch, sortBy, sortOrder]);
 
   const loadResources = useCallback(async () => {
     try {

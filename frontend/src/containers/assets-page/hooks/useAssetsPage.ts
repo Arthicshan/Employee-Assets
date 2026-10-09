@@ -8,6 +8,7 @@ import { assetsService } from '@/services/assets/assets.service';
 import { categoriesService } from '@/services/categories/categories.service';
 import { Asset, AssetCategory, CreateAssetDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { useDebounce } from '@/hooks';
 
 export function useAssetsPage() {
   const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ export function useAssetsPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') ?? '');
   const [categoryFilter, setCategoryFilter] = useState(searchParams.get('category') ?? '');
 
@@ -54,7 +56,7 @@ export function useAssetsPage() {
     try {
       const data = await assetsService.getAssets({
         employeeId: employeeFilter ? Number(employeeFilter) : undefined,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: statusFilter || undefined,
         category: categoryFilter || undefined,
       });
@@ -64,7 +66,7 @@ export function useAssetsPage() {
     } finally {
       if (version === requestVersion.current) setIsLoading(false);
     }
-  }, [search, statusFilter, categoryFilter, employeeFilter]);
+  }, [debouncedSearch, statusFilter, categoryFilter, employeeFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => { void fetchAssets(); }, 0);

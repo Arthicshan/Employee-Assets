@@ -2,8 +2,8 @@ import { apiClient } from '@/libs/api/api-client';
 import { SystemUser, CreateSystemUserDto, UpdateSystemUserDto } from '@/types';
 
 export const usersService = {
-  async getUsers(): Promise<SystemUser[]> {
-    return apiClient.get<SystemUser[]>('/users');
+  async getUsers(params?: { search?: string; role?: string; status?: string }): Promise<SystemUser[]> {
+    return apiClient.get<SystemUser[]>('/users', params);
   },
 
   async getUserById(id: number): Promise<SystemUser> {

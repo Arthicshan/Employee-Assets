@@ -2,8 +2,8 @@ import { apiClient } from '@/libs/api/api-client';
 import { Employee, CreateEmployeeDto, UpdateEmployeeDto } from '@/types';
 
 export const employeesService = {
-  async getEmployees(): Promise<Employee[]> {
-    return apiClient.get<Employee[]>('/employees');
+  async getEmployees(params?: { search?: string; department?: string; status?: string }): Promise<Employee[]> {
+    return apiClient.get<Employee[]>('/employees', params);
   },
 
   async getEmployeeById(id: number): Promise<Employee> {

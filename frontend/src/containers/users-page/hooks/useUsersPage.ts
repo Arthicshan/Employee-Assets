@@ -5,6 +5,7 @@ import { usersService } from '@/services/users/users.service';
 import { SystemUser, CreateSystemUserDto, UpdateSystemUserDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
 import { toast } from '@/components/Toast';
+import { useDebounce } from '@/hooks';
 
 export function useUsersPage() {
   const [users, setUsers] = useState<SystemUser[]>([]);
@@ -15,6 +16,7 @@ export function useUsersPage() {
 
   // Search filter
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   // Modals state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -38,14 +40,16 @@ export function useUsersPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await usersService.getUsers();
+      const data = await usersService.getUsers({
+        search: debouncedSearch || undefined,
+      });
       setUsers(data);
     } catch (err: unknown) {
       setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch system users');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => { void fetchUsers(); }, 0);
@@ -204,8 +208,8 @@ export function useUsersPage() {
   };
 
   const filteredUsers = users.filter((u) => {
-    if (!search) return true;
-    const term = search.toLowerCase();
+    if (!debouncedSearch) return true;
+    const term = debouncedSearch.toLowerCase();
     const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
     return (
       fullName.includes(term) ||

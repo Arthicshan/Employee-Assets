@@ -4,12 +4,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { categoriesService } from '@/services/categories/categories.service';
 import { AssetCategory, CreateCategoryDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { useDebounce } from '@/hooks';
 
 export function useCategoriesPage() {
   const [categories, setCategories] = useState<AssetCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -28,14 +31,16 @@ export function useCategoriesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await categoriesService.getCategories();
+      const data = await categoriesService.getCategories({
+        search: debouncedSearch || undefined,
+      });
       setCategories(data);
     } catch (err: unknown) {
       setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch categories');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => { void fetchCategories(); }, 0);
@@ -97,11 +102,22 @@ export function useCategoriesPage() {
     }
   };
 
+  const filteredCategories = categories.filter((cat) => {
+    if (!debouncedSearch) return true;
+    const term = debouncedSearch.toLowerCase();
+    return (
+      cat.name.toLowerCase().includes(term) ||
+      (cat.description && cat.description.toLowerCase().includes(term))
+    );
+  });
+
   return {
-    categories,
+    categories: filteredCategories,
     isLoading,
     error,
     validationErrors,
+    search,
+    setSearch,
     isCreateOpen,
     setIsCreateOpen,
     editingCategory,

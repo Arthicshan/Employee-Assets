@@ -2,8 +2,8 @@ import { apiClient } from '@/libs/api/api-client';
 import { AssetCategory, CreateCategoryDto, UpdateCategoryDto } from '@/types';
 
 export const categoriesService = {
-  async getCategories(): Promise<AssetCategory[]> {
-    return apiClient.get<AssetCategory[]>('/categories');
+  async getCategories(params?: { search?: string; status?: string }): Promise<AssetCategory[]> {
+    return apiClient.get<AssetCategory[]>('/categories', params);
   },
 
   async getCategoryById(id: number): Promise<AssetCategory> {

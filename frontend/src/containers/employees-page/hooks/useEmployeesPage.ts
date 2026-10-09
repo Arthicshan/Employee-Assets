@@ -5,6 +5,7 @@ import { employeesService } from '@/services/employees/employees.service';
 import { Employee, CreateEmployeeDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
 import { toast } from '@/components/Toast';
+import { useDebounce } from '@/hooks';
 
 export function validateName(name: string, fieldLabel: string = 'Name'): string | null {
   const trimmed = (name || '').trim();
@@ -35,6 +36,7 @@ export function useEmployeesPage() {
   const [activeFilter, setActiveFilter] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -58,14 +60,16 @@ export function useEmployeesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await employeesService.getEmployees();
+      const data = await employeesService.getEmployees({
+        search: debouncedSearch || undefined,
+      });
       setEmployees(data);
     } catch (err: unknown) {
       setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch employees');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => { void fetchEmployees(); }, 0);
@@ -76,8 +80,8 @@ export function useEmployeesPage() {
   const filteredEmployees = employees.filter((emp) => {
     if (activeFilter && (emp.isActive !== false) !== (activeFilter === "ACTIVE")) return false;
     if (departmentFilter && emp.department !== departmentFilter) return false;
-    if (!search) return true;
-    const term = search.toLowerCase();
+    if (!debouncedSearch) return true;
+    const term = debouncedSearch.toLowerCase();
     return (
       emp.employeeNo.toLowerCase().includes(term) ||
       emp.firstName.toLowerCase().includes(term) ||
