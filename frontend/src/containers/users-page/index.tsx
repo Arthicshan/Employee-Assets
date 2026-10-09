@@ -20,6 +20,7 @@ import {
   Briefcase,
   ToggleLeft,
   ToggleRight,
+  X,
 } from 'lucide-react';
 import { SystemUser } from '@/types';
 import { useSession } from '@/libs/api/use-session';
@@ -200,8 +201,18 @@ export const UsersPageContainer: React.FC = () => {
             placeholder="Search users by name, email, position, or role..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            className="w-full pl-10 pr-9 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-0.5"
+              aria-label="Clear user search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
