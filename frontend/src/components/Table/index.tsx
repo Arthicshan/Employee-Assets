@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Pagination } from '../Pagination';
+import { Inbox } from 'lucide-react';
 
 export interface Column<T> {
   header: string;
@@ -75,8 +76,14 @@ export function Table<T>({
           <tbody className="divide-y divide-slate-100">
             {data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-5 py-8 text-center text-slate-400">
-                  {emptyMessage}
+                <td colSpan={columns.length} className="px-5 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-slate-400">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mb-2.5 text-slate-400">
+                      <Inbox className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-600">{emptyMessage}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Try adjusting your filters or search keywords.</p>
+                  </div>
                 </td>
               </tr>
             ) : (
