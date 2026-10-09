@@ -277,7 +277,9 @@ export const UsersPageContainer: React.FC = () => {
               required
               placeholder="e.g. user@assetflow.com"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              error={fieldErrors.email}
+              onChange={(e) => handleFieldChange('email', e.target.value)}
+              onBlur={() => handleFieldBlur('email')}
             />
             <Input
               label={editingUser ? 'Password (Leave blank to keep unchanged)' : 'Initial Password'}

@@ -234,7 +234,9 @@ export const EmployeesPageContainer: React.FC = () => {
               required
               placeholder="e.g. employee@company.com"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              error={fieldErrors.email}
+              onChange={(e) => handleFieldChange('email', e.target.value)}
+              onBlur={() => handleFieldBlur('email')}
             />
           </div>
 

@@ -12,7 +12,7 @@ export function useUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [fieldErrors, setFieldErrors] = useState<{ firstName?: string; lastName?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ firstName?: string; lastName?: string; email?: string }>({});
 
   // Search filter
   const [search, setSearch] = useState('');
@@ -89,16 +89,24 @@ export function useUsersPage() {
     return null;
   };
 
-  const handleFieldChange = (field: 'firstName' | 'lastName', value: string) => {
+  const validateEmailField = (email: string): string | null => {
+    const trimmed = (email || '').trim();
+    if (!trimmed) return 'Work email is required';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) return 'Please enter a valid email address';
+    return null;
+  };
+
+  const handleFieldChange = (field: 'firstName' | 'lastName' | 'email', value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (fieldErrors[field]) {
-      const err = validateNameField(value, field === 'firstName' ? 'First name' : 'Last name');
+      const err = field === 'email' ? validateEmailField(value) : validateNameField(value, field === 'firstName' ? 'First name' : 'Last name');
       setFieldErrors((prev) => ({ ...prev, [field]: err || undefined }));
     }
   };
 
-  const handleFieldBlur = (field: 'firstName' | 'lastName') => {
-    const err = validateNameField(formData[field], field === 'firstName' ? 'First name' : 'Last name');
+  const handleFieldBlur = (field: 'firstName' | 'lastName' | 'email') => {
+    const err = field === 'email' ? validateEmailField(formData.email) : validateNameField(formData[field], field === 'firstName' ? 'First name' : 'Last name');
     setFieldErrors((prev) => ({ ...prev, [field]: err || undefined }));
   };
 
@@ -107,14 +115,16 @@ export function useUsersPage() {
 
     const firstNameError = validateNameField(formData.firstName, 'First name');
     const lastNameError = validateNameField(formData.lastName, 'Last name');
+    const emailError = validateEmailField(formData.email);
 
-    if (firstNameError || lastNameError) {
+    if (firstNameError || lastNameError || emailError) {
       setFieldErrors({
         firstName: firstNameError || undefined,
         lastName: lastNameError || undefined,
+        email: emailError || undefined,
       });
-      setError('Please fix the validation errors for First Name and Last Name.');
-      toast.error('First Name or Last Name is invalid.', 'Validation Error');
+      setError('Please fix the validation errors before saving.');
+      toast.error('Please check all fields and correct invalid entries.', 'Validation Error');
       return;
     }
 
