@@ -98,7 +98,16 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-xs font-bold text-slate-800 leading-tight">
                 {currentUser?.firstName || 'User'} {currentUser?.lastName || ''}
               </span>
-              <Badge variant="purple" size="sm">
+              <Badge
+                variant={
+                  currentUser?.role === 'ADMIN'
+                    ? 'purple'
+                    : currentUser?.role === 'MANAGER'
+                    ? 'blue'
+                    : 'neutral'
+                }
+                size="sm"
+              >
                 {currentUser?.role || 'EMPLOYEE'}
               </Badge>
             </div>
