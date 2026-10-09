@@ -8,6 +8,7 @@ import {
   IsIn,
   IsNumber,
   Min,
+  Matches,
   ValidateIf,
 } from 'class-validator';
 
@@ -15,7 +16,10 @@ export class CreateAssetDto {
   @ApiProperty({ example: 'LAP-0012', description: 'Unique asset inventory tag' })
   @IsString()
   @IsNotEmpty()
-  @Transform(({value}) => typeof value === 'string' ? value.trim() : value)
+  @Transform(({value}) => typeof value === 'string' ? value.trim().toUpperCase() : value)
+  @Matches(/^[A-Z0-9_-]+$/, {
+    message: 'Asset tag must contain only uppercase letters, numbers, hyphens, and underscores',
+  })
   assetTag: string;
 
   @ApiProperty({ example: 'Dell Latitude 5450', description: 'Equipment name/title' })

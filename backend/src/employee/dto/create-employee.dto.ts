@@ -15,7 +15,10 @@ export class CreateEmployeeDto {
   @ApiProperty({ example: 'EMP-001', description: 'Unique company employee ID / badge number' })
   @IsString()
   @IsNotEmpty()
-  @Transform(({value}) => typeof value === 'string' ? value.trim() : value)
+  @Transform(({value}) => typeof value === 'string' ? value.trim().toUpperCase() : value)
+  @Matches(/^[A-Z0-9_-]+$/, {
+    message: 'Employee number must contain only uppercase letters, numbers, hyphens, and underscores',
+  })
   employeeNo: string;
 
   @ApiProperty({ example: 'Alice', description: 'First name' })
