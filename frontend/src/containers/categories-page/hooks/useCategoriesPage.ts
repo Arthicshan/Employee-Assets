@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { categoriesService } from '@/services/categories/categories.service';
 import { AssetCategory, CreateCategoryDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
 import { useDebounce } from '@/hooks';
 
 export function useCategoriesPage() {
@@ -70,18 +71,23 @@ export function useCategoriesPage() {
     try {
       if (editingCategory) {
         await categoriesService.updateCategory(editingCategory.id, formData);
+        toast.success(`Category "${formData.name}" updated successfully.`, 'Category Updated');
         setEditingCategory(null);
       } else {
         await categoriesService.createCategory(formData);
+        toast.success(`Category "${formData.name}" created successfully.`, 'Category Created');
         setIsCreateOpen(false);
       }
       await fetchCategories();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
+        toast.error(err.message, 'Failed to save category');
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save category');
+        const msg = (err instanceof Error ? err.message : undefined) || 'Failed to save category';
+        setError(msg);
+        toast.error(msg, 'Failed to save category');
       }
     } finally {
       setIsSubmitting(false);
@@ -93,10 +99,13 @@ export function useCategoriesPage() {
     setIsSubmitting(true);
     try {
       await categoriesService.deleteCategory(deletingCategory.id);
+      toast.success(`Category "${deletingCategory.name}" removed successfully.`, 'Category Deleted');
       setDeletingCategory(null);
       await fetchCategories();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete category');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete category';
+      setError(msg);
+      toast.error(msg, 'Failed to delete category');
     } finally {
       setIsSubmitting(false);
     }
