@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Pagination } from '../Pagination';
+import { Inbox } from 'lucide-react';
 
 export interface Column<T> {
   header: string;
@@ -58,8 +59,8 @@ export function Table<T>({
   return (
     <div className="w-full bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
       {sortable && fields.length > 0 && <div className="flex gap-3 items-center px-5 py-3 border-b border-slate-100 text-xs">
-        <label>Sort by <select aria-label="Sort by" value={sort} onChange={e => {setSort(e.target.value); setPage({page: 1, data});}} className="ml-2 border rounded p-1"><option value="">Default order</option>{fields.map(field => <option key={field} value={field}>{field.replace(/([A-Z])/g, ' $1')}</option>)}</select></label>
-        <button type="button" onClick={() => setDescending(!descending)}>{descending ? 'Descending' : 'Ascending'}</button>
+        <label className="text-slate-600 font-medium">Sort by <select aria-label="Sort by" value={sort} onChange={e => {setSort(e.target.value); setPage({page: 1, data});}} className="ml-2 border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-700 shadow-2xs"><option value="">Default order</option>{fields.map(field => <option key={field} value={field}>{field.replace(/([A-Z])/g, ' $1')}</option>)}</select></label>
+        <button type="button" onClick={() => setDescending(!descending)} className="px-2.5 py-1 text-xs font-medium rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-colors shadow-2xs">{descending ? 'Descending' : 'Ascending'}</button>
       </div>}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm text-slate-600">
@@ -75,8 +76,14 @@ export function Table<T>({
           <tbody className="divide-y divide-slate-100">
             {data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-5 py-8 text-center text-slate-400">
-                  {emptyMessage}
+                <td colSpan={columns.length} className="px-5 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center max-w-sm mx-auto text-slate-400">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mb-2.5 text-slate-400">
+                      <Inbox className="w-5 h-5" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-600">{emptyMessage}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Try adjusting your filters or search keywords.</p>
+                  </div>
                 </td>
               </tr>
             ) : (

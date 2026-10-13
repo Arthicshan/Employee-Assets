@@ -10,7 +10,7 @@ import { Input } from '@/components/Input';
 import { Select } from '@/components/Select';
 import { StatusBadge } from '@/components/Badge';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Boxes, Plus, Pencil, Trash2, Search, AlertCircle, Eye } from 'lucide-react';
+import { Boxes, Plus, Pencil, Trash2, Search, AlertCircle, Eye, X } from 'lucide-react';
 import { assetsService } from '@/services/assets/assets.service';
 import { Asset } from '@/types';
 import { sessionManager } from '@/libs/api/session-storage';
@@ -189,8 +189,18 @@ export const AssetsPageContainer: React.FC = () => {
             placeholder="Search by tag, name, brand, model or serial..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="w-full pl-10 pr-9 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">

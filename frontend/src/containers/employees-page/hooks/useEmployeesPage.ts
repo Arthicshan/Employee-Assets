@@ -4,15 +4,51 @@ import { useState, useEffect, useCallback } from 'react';
 import { employeesService } from '@/services/employees/employees.service';
 import { Employee, CreateEmployeeDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
+import { useDebounce } from '@/hooks';
+
+export function validateName(name: string, fieldLabel: string = 'Name'): string | null {
+  const trimmed = (name || '').trim();
+  if (!trimmed) {
+    return `${fieldLabel} is required`;
+  }
+  if (trimmed.length < 2) {
+    return `${fieldLabel} must be at least 2 characters long`;
+  }
+  if (trimmed.length > 50) {
+    return `${fieldLabel} cannot exceed 50 characters`;
+  }
+  if (!/^[a-zA-Z\s'-]+$/.test(trimmed)) {
+    return `${fieldLabel} can only contain letters, spaces, hyphens, and apostrophes`;
+  }
+  if (!/[a-zA-Z]/.test(trimmed)) {
+    return `${fieldLabel} must contain at least one letter`;
+  }
+  return null;
+}
+
+export function validateEmail(email: string): string | null {
+  const trimmed = (email || '').trim();
+  if (!trimmed) {
+    return 'Email is required';
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmed)) {
+    return 'Please enter a valid email address';
+  }
+  return null;
+}
 
 export function useEmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<{ firstName?: string; lastName?: string; email?: string }>({});
   const [activeFilter, setActiveFilter] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -36,14 +72,16 @@ export function useEmployeesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await employeesService.getEmployees();
+      const data = await employeesService.getEmployees({
+        search: debouncedSearch || undefined,
+      });
       setEmployees(data);
     } catch (err: unknown) {
       setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch employees');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => { void fetchEmployees(); }, 0);
@@ -54,8 +92,8 @@ export function useEmployeesPage() {
   const filteredEmployees = employees.filter((emp) => {
     if (activeFilter && (emp.isActive !== false) !== (activeFilter === "ACTIVE")) return false;
     if (departmentFilter && emp.department !== departmentFilter) return false;
-    if (!search) return true;
-    const term = search.toLowerCase();
+    if (!debouncedSearch) return true;
+    const term = debouncedSearch.toLowerCase();
     return (
       emp.employeeNo.toLowerCase().includes(term) ||
       emp.firstName.toLowerCase().includes(term) ||
@@ -70,6 +108,7 @@ export function useEmployeesPage() {
     setFormData(initialForm);
     setError(null);
     setValidationErrors([]);
+    setFieldErrors({});
     setIsCreateOpen(true);
   };
 
@@ -86,29 +125,71 @@ export function useEmployeesPage() {
     });
     setError(null);
     setValidationErrors([]);
+    setFieldErrors({});
+  };
+
+  const handleFieldChange = (field: 'firstName' | 'lastName' | 'email', value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) {
+      const err = field === 'email' ? validateEmail(value) : validateName(value, field === 'firstName' ? 'First name' : 'Last name');
+      setFieldErrors((prev) => ({ ...prev, [field]: err || undefined }));
+    }
+  };
+
+  const handleFieldBlur = (field: 'firstName' | 'lastName' | 'email') => {
+    const err = field === 'email' ? validateEmail(formData.email) : validateName(formData[field], field === 'firstName' ? 'First name' : 'Last name');
+    setFieldErrors((prev) => ({ ...prev, [field]: err || undefined }));
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const firstNameError = validateName(formData.firstName, 'First name');
+    const lastNameError = validateName(formData.lastName, 'Last name');
+    const emailError = validateEmail(formData.email);
+
+    if (firstNameError || lastNameError || emailError) {
+      setFieldErrors({
+        firstName: firstNameError || undefined,
+        lastName: lastNameError || undefined,
+        email: emailError || undefined,
+      });
+      setError('Please fix the validation errors in the form.');
+      toast.error('Please check the form fields and correct errors.', 'Validation Error');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
     setValidationErrors([]);
+    setFieldErrors({});
 
     try {
+      const payload: CreateEmployeeDto = {
+        ...formData,
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+      };
+
       if (editingEmployee) {
-        await employeesService.updateEmployee(editingEmployee.id, formData);
+        await employeesService.updateEmployee(editingEmployee.id, payload);
+        toast.success(`Employee ${payload.firstName} ${payload.lastName} updated successfully.`, 'Employee Updated');
         setEditingEmployee(null);
       } else {
-        await employeesService.createEmployee(formData);
+        await employeesService.createEmployee(payload);
+        toast.success(`Employee ${payload.firstName} ${payload.lastName} created successfully.`, 'Employee Created');
         setIsCreateOpen(false);
       }
       await fetchEmployees();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
+        toast.error(err.message, 'Failed to save employee');
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save employee');
+        const msg = (err instanceof Error ? err.message : undefined) || 'Failed to save employee';
+        setError(msg);
+        toast.error(msg, 'Failed to save employee');
       }
     } finally {
       setIsSubmitting(false);
@@ -120,10 +201,13 @@ export function useEmployeesPage() {
     setIsSubmitting(true);
     try {
       await employeesService.deleteEmployee(deletingEmployee.id);
+      toast.success(`Employee ${deletingEmployee.firstName} ${deletingEmployee.lastName} deleted.`, 'Employee Deleted');
       setDeletingEmployee(null);
       await fetchEmployees();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete employee');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete employee';
+      setError(msg);
+      toast.error(msg, 'Failed to delete employee');
     } finally {
       setIsSubmitting(false);
     }
@@ -135,6 +219,11 @@ export function useEmployeesPage() {
     isLoading,
     error,
     validationErrors,
+    fieldErrors,
+    setFieldErrors,
+    handleFieldChange,
+    handleFieldBlur,
+    validateName,
     search,
     setSearch,
     isCreateOpen,

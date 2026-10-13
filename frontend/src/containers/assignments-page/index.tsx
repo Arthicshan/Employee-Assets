@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Boxes,
   ShieldAlert,
+  X,
 } from 'lucide-react';
 import { AssetAssignment } from '@/types';
 
@@ -165,7 +166,26 @@ export const AssignmentsPageContainer: React.FC<{returnsView?: boolean}> = ({ret
       )}
 
       <div className="flex flex-wrap gap-3">
-        <Input aria-label="Search assignments" placeholder="Search equipment or employee..." value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="flex-1 min-w-[280px]">
+          <Input
+            aria-label="Search assignments"
+            placeholder="Search equipment or employee..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            rightElement={
+              search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="p-1 hover:text-slate-700 cursor-pointer"
+                  aria-label="Clear assignments search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              ) : null
+            }
+          />
+        </div>
         <Select aria-label="Sort assignments" value={sortBy} onChange={e => setSortBy(e.target.value)} options={[{label:'Created Date',value:'createdAt'},{label:'Assigned Date',value:'assignedAt'},{label:'Return Date',value:'returnedAt'},{label:'Status',value:'status'}]} />
         <Select aria-label="Sort direction" value={sortOrder} onChange={e => setSortOrder(e.target.value as 'asc' | 'desc')} options={[{label:'Descending',value:'desc'},{label:'Ascending',value:'asc'}]} />
       </div>

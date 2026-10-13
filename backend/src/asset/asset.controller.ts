@@ -1,10 +1,10 @@
-import { ParseIntPipe } from '@nestjs/common';
 import {
   Body,
   Controller,
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Put,
@@ -39,12 +39,20 @@ export class AssetController {
 
   @Get(':id/history')
   @Roles(Role.ADMIN, Role.MANAGER)
-  history(@Param('id', ParseIntPipe) id: string) { return this.assetService.history(Number(id)); }
+  @ApiOperation({ summary: 'Retrieve chronological audit history for an asset (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Asset history timeline returned' })
+  @ApiResponse({ status: 404, description: 'Asset not found' })
+  history(@Param('id', ParseIntPipe) id: number) {
+    return this.assetService.history(id);
+  }
 
   @Patch(':id/status')
   @Roles(Role.ADMIN, Role.MANAGER)
-  changeStatus(@Param('id', ParseIntPipe) id: string, @Body() data: AssetStatusDto) {
-    return this.assetService.update(Number(id), {status: data.status, notes: data.notes});
+  @ApiOperation({ summary: 'Update asset lifecycle status and log remarks (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Asset status updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid status transition' })
+  changeStatus(@Param('id', ParseIntPipe) id: number, @Body() data: AssetStatusDto) {
+    return this.assetService.update(id, { status: data.status, notes: data.notes });
   }
 
   @Get(':id')
@@ -52,8 +60,8 @@ export class AssetController {
   @ApiOperation({ summary: 'Get asset details by ID (Admin & Manager)' })
   @ApiResponse({ status: 200, description: 'Asset details returned' })
   @ApiResponse({ status: 404, description: 'Asset not found' })
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.assetService.findOne(Number(id));
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.assetService.findOne(id);
   }
 
   @Post()
@@ -71,16 +79,19 @@ export class AssetController {
   @ApiResponse({ status: 200, description: 'Asset updated successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   update(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() data: UpdateAssetDto,
   ) {
-    return this.assetService.update(Number(id), data);
+    return this.assetService.update(id, data);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
-  patch(@Param('id', ParseIntPipe) id: string, @Body() data: UpdateAssetDto) {
-    return this.assetService.update(Number(id), data);
+  @ApiOperation({ summary: 'Partially update asset details (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Asset partially updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
+  patch(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAssetDto) {
+    return this.assetService.update(id, data);
   }
 
   @Delete(':id')
@@ -88,27 +99,27 @@ export class AssetController {
   @ApiOperation({ summary: 'Retire an asset and preserve history (Admin only)' })
   @ApiResponse({ status: 200, description: 'Asset retired successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
-  remove(@Param('id', ParseIntPipe) id: string) {
-    return this.assetService.remove(Number(id));
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.assetService.remove(id);
   }
 
   @Patch(':id/assign/:employeeId')
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Assign asset directly to an employee (Admin & Manager)' })
   assignToEmployee(
-    @Param('id', ParseIntPipe) id: string,
-    @Param('employeeId', ParseIntPipe) employeeId: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('employeeId', ParseIntPipe) employeeId: number,
   ) {
     return this.assetService.assignToEmployee(
-      Number(id),
-      Number(employeeId),
+      id,
+      employeeId,
     );
   }
 
   @Patch(':id/unassign')
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Unassign asset from employee (Admin & Manager)' })
-  unassignFromEmployee(@Param('id', ParseIntPipe) id: string) {
-    return this.assetService.unassignFromEmployee(Number(id));
+  unassignFromEmployee(@Param('id', ParseIntPipe) id: number) {
+    return this.assetService.unassignFromEmployee(id);
   }
 }

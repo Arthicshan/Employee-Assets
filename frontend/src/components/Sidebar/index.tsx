@@ -9,6 +9,7 @@ import {
   Layers,
   Users,
   ClipboardList,
+  RotateCcw,
   LogOut,
   User,
   Shield,
@@ -39,7 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
         { label: 'Assets', href: '/assets', icon: Boxes },
         { label: 'Employees', href: '/employees', icon: Users },
         { label: 'Assignments', href: '/assignments', icon: ClipboardList },
-      { label: 'Returns', href: '/returns', icon: ClipboardList },
+        { label: 'Returns', href: '/returns', icon: RotateCcw },
       ];
     }
     return [
@@ -48,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
       { label: 'Categories', href: '/categories', icon: Layers },
       { label: 'Employees', href: '/employees', icon: Users },
       { label: 'Assignments', href: '/assignments', icon: ClipboardList },
-      { label: 'Returns', href: '/returns', icon: ClipboardList },
+      { label: 'Returns', href: '/returns', icon: RotateCcw },
       { label: 'Users', href: '/users', icon: UserCheck },
     ];
   };
@@ -69,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 min-h-0 px-3 py-3 space-y-1 overflow-y-auto">
+      <nav aria-label="Main sidebar navigation" className="flex-1 min-h-0 px-3 py-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`));
@@ -77,6 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout }) => {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? 'page' : undefined}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-sm'

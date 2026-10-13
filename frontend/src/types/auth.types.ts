@@ -4,6 +4,7 @@ export interface UserProfile {
   id: number;
   email: string;
   role: UserRole;
+  employeeId?: number | null;
   firstName: string;
   lastName: string;
 }

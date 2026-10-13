@@ -12,6 +12,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, rightElement, className = '', id, ...props }, ref) => {
     const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+    const errorId = inputId ? `${inputId}-error` : undefined;
+    const helperId = inputId ? `${inputId}-helper` : undefined;
 
     return (
       <div className="w-full flex flex-col gap-1.5">
@@ -25,6 +27,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             id={inputId}
             ref={ref}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : helperText ? helperId : undefined}
             className={`w-full px-3.5 py-2 text-sm rounded-lg border bg-white text-slate-900 placeholder-slate-400 transition-colors focus:outline-none focus:ring-2 ${
               rightElement ? 'pr-10' : ''
             } ${
@@ -40,8 +44,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
         </div>
-        {error && <span className="text-xs text-rose-600 font-medium">{error}</span>}
-        {helperText && !error && <span className="text-xs text-slate-500">{helperText}</span>}
+        {error && <span id={errorId} className="text-xs text-rose-600 font-medium">{error}</span>}
+        {helperText && !error && <span id={helperId} className="text-xs text-slate-500">{helperText}</span>}
       </div>
     );
   }

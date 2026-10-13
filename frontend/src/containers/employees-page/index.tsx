@@ -9,7 +9,7 @@ import { Modal } from '@/components/Modal';
 import { Select } from '@/components/Select';
 import { Input } from '@/components/Input';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { Users, Plus, Pencil, Trash2, Search, AlertCircle, Eye } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Search, AlertCircle, Eye, X } from 'lucide-react';
 import { Employee } from '@/types';
 import { sessionManager } from '@/libs/api/session-storage';
 
@@ -32,6 +32,9 @@ export const EmployeesPageContainer: React.FC = () => {
     setDeletingEmployee,
     formData,
     setFormData,
+    fieldErrors,
+    handleFieldChange,
+    handleFieldBlur,
     isSubmitting,
     openCreateModal,
     openEditModal,
@@ -164,8 +167,18 @@ export const EmployeesPageContainer: React.FC = () => {
             placeholder="Search by employee ID, name, email, department, designation..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            className="w-full pl-10 pr-9 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
           />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              aria-label="Clear search"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-100 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -221,7 +234,9 @@ export const EmployeesPageContainer: React.FC = () => {
               required
               placeholder="e.g. employee@company.com"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              error={fieldErrors.email}
+              onChange={(e) => handleFieldChange('email', e.target.value)}
+              onBlur={() => handleFieldBlur('email')}
             />
           </div>
 
@@ -231,14 +246,18 @@ export const EmployeesPageContainer: React.FC = () => {
               required
               placeholder="e.g. Alice"
               value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              error={fieldErrors.firstName}
+              onChange={(e) => handleFieldChange('firstName', e.target.value)}
+              onBlur={() => handleFieldBlur('firstName')}
             />
             <Input
               label="Last Name"
               required
               placeholder="e.g. Johnson"
               value={formData.lastName}
-              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              error={fieldErrors.lastName}
+              onChange={(e) => handleFieldChange('lastName', e.target.value)}
+              onBlur={() => handleFieldBlur('lastName')}
             />
           </div>
 

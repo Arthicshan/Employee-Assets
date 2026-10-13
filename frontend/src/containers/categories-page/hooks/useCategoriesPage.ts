@@ -4,12 +4,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { categoriesService } from '@/services/categories/categories.service';
 import { AssetCategory, CreateCategoryDto } from '@/types';
 import { ApiError } from '@/libs/api/api-error';
+import { toast } from '@/components/Toast';
+import { useDebounce } from '@/hooks';
 
 export function useCategoriesPage() {
   const [categories, setCategories] = useState<AssetCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 400);
 
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -28,14 +32,16 @@ export function useCategoriesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await categoriesService.getCategories();
+      const data = await categoriesService.getCategories({
+        search: debouncedSearch || undefined,
+      });
       setCategories(data);
     } catch (err: unknown) {
       setError((err instanceof Error ? err.message : undefined) || 'Failed to fetch categories');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     const timer = setTimeout(() => { void fetchCategories(); }, 0);
@@ -65,18 +71,23 @@ export function useCategoriesPage() {
     try {
       if (editingCategory) {
         await categoriesService.updateCategory(editingCategory.id, formData);
+        toast.success(`Category "${formData.name}" updated successfully.`, 'Category Updated');
         setEditingCategory(null);
       } else {
         await categoriesService.createCategory(formData);
+        toast.success(`Category "${formData.name}" created successfully.`, 'Category Created');
         setIsCreateOpen(false);
       }
       await fetchCategories();
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(err.message);
+        toast.error(err.message, 'Failed to save category');
         if (err.validationErrors) setValidationErrors(err.validationErrors);
       } else {
-        setError((err instanceof Error ? err.message : undefined) || 'Failed to save category');
+        const msg = (err instanceof Error ? err.message : undefined) || 'Failed to save category';
+        setError(msg);
+        toast.error(msg, 'Failed to save category');
       }
     } finally {
       setIsSubmitting(false);
@@ -88,20 +99,34 @@ export function useCategoriesPage() {
     setIsSubmitting(true);
     try {
       await categoriesService.deleteCategory(deletingCategory.id);
+      toast.success(`Category "${deletingCategory.name}" removed successfully.`, 'Category Deleted');
       setDeletingCategory(null);
       await fetchCategories();
     } catch (err: unknown) {
-      setError((err instanceof Error ? err.message : undefined) || 'Failed to delete category');
+      const msg = (err instanceof Error ? err.message : undefined) || 'Failed to delete category';
+      setError(msg);
+      toast.error(msg, 'Failed to delete category');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const filteredCategories = categories.filter((cat) => {
+    if (!debouncedSearch) return true;
+    const term = debouncedSearch.toLowerCase();
+    return (
+      cat.name.toLowerCase().includes(term) ||
+      (cat.description && cat.description.toLowerCase().includes(term))
+    );
+  });
+
   return {
-    categories,
+    categories: filteredCategories,
     isLoading,
     error,
     validationErrors,
+    search,
+    setSearch,
     isCreateOpen,
     setIsCreateOpen,
     editingCategory,

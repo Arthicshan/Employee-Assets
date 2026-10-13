@@ -52,12 +52,16 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Modal Card */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-dialog-title"
         className={`relative w-full ${maxWidthStyles[maxWidth]} bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all z-10`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+          <h3 id="modal-dialog-title" className="text-base font-semibold text-slate-800">{title}</h3>
           <button
             onClick={onClose}
+            aria-label="Close modal"
             className="text-slate-400 hover:text-slate-600 rounded-lg p-1 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />

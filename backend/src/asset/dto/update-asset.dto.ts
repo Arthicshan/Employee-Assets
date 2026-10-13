@@ -19,10 +19,10 @@ export class UpdateAssetDto {
   @IsNotEmpty({ message: 'Asset tag cannot be empty' })
   @MinLength(3, { message: 'Asset tag must be at least 3 characters (e.g. MOB-001)' })
   @MaxLength(30, { message: 'Asset tag cannot exceed 30 characters' })
-  @Matches(/^[A-Za-z0-9\-_]+$/, {
-    message: 'Asset tag must contain only alphanumeric characters, hyphens, and underscores without spaces (e.g. MOB-001)',
+  @Matches(/^[A-Z0-9_-]+$/, {
+    message: 'Asset tag must contain only uppercase alphanumeric characters, hyphens, and underscores without spaces (e.g. MOB-001)',
   })
-  @Transform(({value}) => typeof value === 'string' ? value.trim() : value)
+  @Transform(({value}) => typeof value === 'string' ? value.trim().toUpperCase() : value)
   assetTag?: string;
 
   @ValidateIf((_, value) => value !== undefined)

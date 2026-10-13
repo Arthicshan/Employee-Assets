@@ -54,12 +54,11 @@ export const toast = {
 };
 
 export const ToastContainer: React.FC = () => {
-  const [items, setItems] = useState<ToastItem[]>([]);
+  const [items, setItems] = useState<ToastItem[]>(() => [...toasts]);
 
   useEffect(() => {
     const listener = (newToasts: ToastItem[]) => setItems(newToasts);
     listeners.add(listener);
-    setItems([...toasts]);
     return () => {
       listeners.delete(listener);
     };
@@ -70,7 +69,7 @@ export const ToastContainer: React.FC = () => {
   return (
     <div
       aria-live="polite"
-      className="fixed top-5 right-5 z-[99999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"
+      className="fixed top-5 right-5 z-99999 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"
     >
       {items.map((item) => {
         let borderClass = 'border-emerald-200 bg-white';
@@ -109,7 +108,7 @@ export const ToastContainer: React.FC = () => {
                   {item.title}
                 </h4>
               )}
-              <p className="text-xs text-slate-600 leading-relaxed font-medium break-words">
+              <p className="text-xs text-slate-600 leading-relaxed font-medium wrap-break-word">
                 {item.message}
               </p>
             </div>

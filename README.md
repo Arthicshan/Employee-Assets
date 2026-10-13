@@ -251,14 +251,15 @@ Employee Asset & Inventory Management System is a full-stack application designe
 
 ### Key Features
 
-- Asset registration and management
-- Employee management
-- Asset assignment and return tracking
-- Asset status and condition monitoring
-- Assignment history
-- Dashboard and inventory overview
-- Role-based access control
-- Search and filtering
+- **Debounced Search Architecture**: Search inputs across Assets, Employees, Categories, Assignments, Returns, and Users utilize an optimized 400ms debounce hook (`useDebounce`) with quick-clear buttons (`X`), dramatically reducing database queries while typing.
+- **Admin Account Safeguards**: Backend and frontend protections guarantee system continuity by preventing the deactivation or deletion of Admin accounts, with self-deletion guards for logged-in administrators.
+- **Input Validation & Sanitization**: Comprehensive validation rules across frontend forms and NestJS DTOs (`class-validator`), including uppercase normalization for asset tags and employee codes, strict name formats, and corporate email verification.
+- **Asset Registration & Lifecycle Management**: Equipment tracking with statuses (`Available`, `Assigned`, `Damaged`, `Under Repair`, `Lost`, `Retired`).
+- **Employee Directory**: Staff profiles linked to asset custody and assignment histories.
+- **Asset Assignment & Return Tracking**: ACID-compliant transactions with condition inspections (`New`, `Good`, `Fair`, `Damaged`) and separate return remarks.
+- **Role-Based Access Control (RBAC)**: Distinct authorization scopes for `ADMIN`, `MANAGER`, and `EMPLOYEE` users with contextual badges.
+- **Audit History**: Immutable chronological tracking of equipment transitions and assignments.
+- **Accessible UI & Toast Feedback**: WAI-ARIA accessible dialogs, responsive tables with styled empty states, and real-time toast notifications for system operations.
 
 ### Technology Stack
 
@@ -290,12 +291,45 @@ Make sure you have the following installed:
 
 Frontend:
 
+```bash
 npm run dev
+```
 
 Backend:
 
+```bash
 npm run start:dev
+```
 
+### Testing and Code Quality
+
+Run tests and verification commands in each package:
+
+Backend:
+
+```bash
+# Run unit test suite
+npm test
+
+# Run code linter
+npm run lint
+
+# Build production bundle
+npm run build
+```
+
+Frontend:
+
+```bash
+# Run ESLint
+npm run lint
+
+# Check TypeScript types
+npx tsc --noEmit
+
+# Build production bundle
+npm run build
+```
 
 ## Contributing
 
