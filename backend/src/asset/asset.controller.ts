@@ -39,12 +39,20 @@ export class AssetController {
 
   @Get(':id/history')
   @Roles(Role.ADMIN, Role.MANAGER)
-  history(@Param('id', ParseIntPipe) id: number) { return this.assetService.history(id); }
+  @ApiOperation({ summary: 'Retrieve chronological audit history for an asset (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Asset history timeline returned' })
+  @ApiResponse({ status: 404, description: 'Asset not found' })
+  history(@Param('id', ParseIntPipe) id: number) {
+    return this.assetService.history(id);
+  }
 
   @Patch(':id/status')
   @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Update asset lifecycle status and log remarks (Admin & Manager)' })
+  @ApiResponse({ status: 200, description: 'Asset status updated successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid status transition' })
   changeStatus(@Param('id', ParseIntPipe) id: number, @Body() data: AssetStatusDto) {
-    return this.assetService.update(id, {status: data.status, notes: data.notes});
+    return this.assetService.update(id, { status: data.status, notes: data.notes });
   }
 
   @Get(':id')
@@ -79,6 +87,9 @@ export class AssetController {
 
   @Patch(':id')
   @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Partially update asset details (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Asset partially updated successfully' })
+  @ApiResponse({ status: 403, description: 'Forbidden - requires ADMIN role' })
   patch(@Param('id', ParseIntPipe) id: number, @Body() data: UpdateAssetDto) {
     return this.assetService.update(id, data);
   }
