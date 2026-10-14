@@ -9,6 +9,7 @@ import {
   Layers,
   Users,
   ClipboardList,
+  RotateCcw,
   LogOut,
   Menu,
   X,
@@ -65,7 +66,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
         { label: 'Assets', href: '/assets', icon: Boxes },
         { label: 'Employees', href: '/employees', icon: Users },
         { label: 'Assignments', href: '/assignments', icon: ClipboardList },
-      { label: 'Returns', href: '/returns', icon: ClipboardList },
+        { label: 'Returns', href: '/returns', icon: RotateCcw },
       ];
     }
     return [
@@ -74,7 +75,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
       { label: 'Categories', href: '/categories', icon: Layers },
       { label: 'Employees', href: '/employees', icon: Users },
       { label: 'Assignments', href: '/assignments', icon: ClipboardList },
-      { label: 'Returns', href: '/returns', icon: ClipboardList },
+      { label: 'Returns', href: '/returns', icon: RotateCcw },
       { label: 'Users', href: '/users', icon: UserCheck },
     ];
   };
@@ -100,6 +101,7 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
             onClick={() => setIsMobileOpen(!isMobileOpen)}
             className="p-1.5 rounded-lg text-slate-300 hover:bg-slate-800 cursor-pointer"
             aria-label="Toggle navigation menu"
+            aria-expanded={isMobileOpen}
           >
             {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
