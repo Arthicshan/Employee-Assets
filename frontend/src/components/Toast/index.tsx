@@ -69,6 +69,7 @@ export const ToastContainer: React.FC = () => {
   return (
     <div
       aria-live="polite"
+      aria-atomic="true"
       className="fixed top-5 right-5 z-99999 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"
     >
       {items.map((item) => {
@@ -97,6 +98,8 @@ export const ToastContainer: React.FC = () => {
         return (
           <div
             key={item.id}
+            role={item.type === 'error' ? 'alert' : 'status'}
+            aria-live={item.type === 'error' ? 'assertive' : 'polite'}
             className={`pointer-events-auto rounded-xl border p-4 shadow-xl shadow-slate-900/10 flex items-start gap-3 transition-all animate-in fade-in slide-in-from-top-2 duration-200 ${borderClass}`}
           >
             <div className={`p-1.5 rounded-lg shrink-0 ${iconBg}`}>
