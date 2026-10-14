@@ -16,6 +16,7 @@ export class HealthService {
     return {
       status: dbStatus === 'connected' ? 'ok' : 'degraded',
       database: dbStatus,
+      uptime: Math.floor(process.uptime()),
       timestamp: new Date().toISOString(),
     };
   }
