@@ -126,15 +126,18 @@ Interactive Swagger documentation is available out of the box:
 
 The project includes both comprehensive unit tests and end-to-end integration tests:
 
-### 1. Backend Unit Tests (20 Suites, 51 Tests)
+### 1. Backend Unit Tests (27 Suites, 129 Tests)
 ```bash
 cd backend
 npm test
 ```
-- ✅ `assignments.service.spec.ts` (Assignment business rules, inactive employee rejection, status validation)
-- ✅ `returns.service.spec.ts` (Return condition handling, asset status transitions)
-- ✅ `employee-portal.service.spec.ts` (Employee portal self-service endpoints)
-- ✅ `employee.service.spec.ts`, `asset.service.spec.ts`, `health.service.spec.ts`, etc.
+- ✅ `assignments.service.spec.ts`, `assignments.controller.spec.ts` (Assignment rules, inactive employee rejection, status validation)
+- ✅ `returns.service.spec.ts`, `returns.controller.spec.ts` (Return condition handling, hardware inspection transitions)
+- ✅ `employee-portal.service.spec.ts`, `employee-portal.controller.spec.ts` (Employee portal self-service endpoints)
+- ✅ `users.service.spec.ts`, `users.controller.spec.ts` (Admin account protection rules and user administration)
+- ✅ `asset.service.spec.ts`, `asset.controller.spec.ts` (Asset lifecycle and audit trail retrieval)
+- ✅ `categories.service.spec.ts`, `categories.controller.spec.ts` (Category CRUD and active status filtering)
+- ✅ `common/list-query.spec.ts`, `common/filters/problem-details.filter.spec.ts`, `auth/guards/roles.guard.spec.ts` (Paging helpers, RFC 7807 problem details, and RBAC guards)
 
 ### 2. Backend E2E Tests (8 Suites, 63 Tests)
 ```bash
