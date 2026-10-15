@@ -56,3 +56,4 @@ describe('CurrentUser decorator', () => {
     expect(factory('id', ctx)).toBeUndefined();
   });
 });
+
