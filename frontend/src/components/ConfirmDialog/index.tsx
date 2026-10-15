@@ -3,7 +3,7 @@
 import React from 'react';
 import { Modal } from '../Modal';
 import { Button } from '../Button';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, HelpCircle } from 'lucide-react';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ interface ConfirmDialogProps {
   message: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmVariant?: 'primary' | 'danger';
   isLoading?: boolean;
 }
 
@@ -24,6 +25,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   message,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
+  confirmVariant = 'danger',
   isLoading = false,
 }) => {
   React.useEffect(() => {
@@ -37,18 +39,25 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isLoading, onClose]);
 
+  const isDanger = confirmVariant === 'danger';
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
-      <div className="flex flex-col items-center text-center gap-3" role="alertdialog" aria-describedby="confirm-dialog-description">
-        <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center" aria-hidden="true">
-          <AlertTriangle className="w-6 h-6" />
+      <div className="flex flex-col items-center text-center gap-3" aria-describedby="confirm-dialog-description">
+        <div
+          className={`w-12 h-12 rounded-full flex items-center justify-center ${
+            isDanger ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+          }`}
+          aria-hidden="true"
+        >
+          {isDanger ? <AlertTriangle className="w-6 h-6" /> : <HelpCircle className="w-6 h-6" />}
         </div>
         <p id="confirm-dialog-description" className="text-sm text-slate-600">{message}</p>
         <div className="flex items-center gap-3 w-full mt-4">
           <Button variant="secondary" onClick={onClose} disabled={isLoading} className="flex-1">
             {cancelLabel}
           </Button>
-          <Button variant="danger" onClick={onConfirm} isLoading={isLoading} className="flex-1">
+          <Button variant={confirmVariant} onClick={onConfirm} isLoading={isLoading} className="flex-1">
             {confirmLabel}
           </Button>
         </div>

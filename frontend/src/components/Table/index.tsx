@@ -91,8 +91,16 @@ export function Table<T>({
                 <tr
                   key={keyExtractor(item)}
                   onClick={() => onRowClick && onRowClick(item)}
+                  onKeyDown={(e) => {
+                    if (onRowClick && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      onRowClick(item);
+                    }
+                  }}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  role={onRowClick ? 'button' : undefined}
                   className={`transition-colors ${
-                    onRowClick ? 'hover:bg-slate-50/80 cursor-pointer' : 'hover:bg-slate-50/40'
+                    onRowClick ? 'hover:bg-slate-50/80 cursor-pointer focus:outline-none focus:bg-slate-100/80' : 'hover:bg-slate-50/40'
                   }`}
                 >
                   {columns.map((col, cIdx) => (

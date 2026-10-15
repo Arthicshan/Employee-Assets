@@ -35,7 +35,7 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, onPageChange }) =>
           disabled={page <= 1}
           aria-label="First page"
           title="First page"
-          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
         >
           <ChevronsLeft className="w-4 h-4" />
         </button>
@@ -45,13 +45,13 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, onPageChange }) =>
           disabled={page <= 1}
           aria-label="Previous page"
           title="Previous page"
-          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
         <span
           aria-current="page"
-          className="px-3 py-1 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg"
+          className="px-3 py-1 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg select-none"
         >
           {page} / {totalPages}
         </span>
@@ -61,7 +61,7 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, onPageChange }) =>
           disabled={page >= totalPages}
           aria-label="Next page"
           title="Next page"
-          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -71,7 +71,7 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, onPageChange }) =>
           disabled={page >= totalPages}
           aria-label="Last page"
           title="Last page"
-          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+          className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
         >
           <ChevronsRight className="w-4 h-4" />
         </button>

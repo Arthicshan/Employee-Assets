@@ -25,7 +25,21 @@ async function bootstrap() {
   // Global Problem Details exception filter (RFC 7807)
   app.useGlobalFilters(new ProblemDetailsFilter());
 
-  const config = new DocumentBuilder().setTitle('AssetFlow API').setVersion('1.0').addBearerAuth(undefined, 'JWT-auth').build();
+  const config = new DocumentBuilder()
+    .setTitle('AssetFlow API')
+    .setDescription('Enterprise Employee Asset & Equipment Inventory Management System API')
+    .setVersion('1.0.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Enter Bearer JWT token to authenticate',
+      },
+      'JWT-auth',
+    )
+    .build();
   SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
 
   const port = process.env.PORT ?? 3001;

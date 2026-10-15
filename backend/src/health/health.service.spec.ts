@@ -31,6 +31,8 @@ describe('HealthService', () => {
     const result = await service.check();
     expect(result.status).toBe('ok');
     expect(result.database).toBe('connected');
+    expect(result).toHaveProperty('uptime');
+    expect(typeof result.uptime).toBe('number');
   });
 
   it('should report degraded and disconnected when db query fails', async () => {
