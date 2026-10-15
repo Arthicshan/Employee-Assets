@@ -116,5 +116,48 @@ describe('ReturnsService', () => {
         },
       });
     });
+
+    it('should throw BadRequestException if return date precedes assignment date', async () => {
+      mockPrisma.assetAssignment.findUnique.mockResolvedValue({
+        id: 1,
+        assetId: 5,
+        employeeId: 10,
+        status: 'ACTIVE',
+        assignedAt: new Date('2026-05-10T10:00:00Z'),
+      });
+
+      await expect(
+        service.create({
+          assignmentId: 1,
+          condition: 'GOOD',
+          returnedAt: '2026-05-01T10:00:00Z',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should keep asset status as lost if the asset is currently marked lost', async () => {
+      mockPrisma.assetAssignment.findUnique.mockResolvedValue({
+        id: 2,
+        assetId: 8,
+        employeeId: 11,
+        status: 'ACTIVE',
+        assignedAt: new Date('2026-05-01T10:00:00Z'),
+      });
+      mockPrisma.asset.findUnique.mockResolvedValue({ id: 8, status: 'lost' });
+
+      await service.create({
+        assignmentId: 2,
+        condition: 'GOOD',
+      });
+
+      expect(mockPrisma.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 8 },
+          data: expect.objectContaining({
+            status: 'lost',
+          }),
+        }),
+      );
+    });
   });
 });
