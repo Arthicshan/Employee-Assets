@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { AssignmentsService } from '../assignments/assignments.service';
 import { ReturnsService } from '../returns/returns.service';
 import { AssetService } from './asset.service';
@@ -21,7 +21,10 @@ describe('AssetService', () => {
       findUnique: jest.fn().mockResolvedValue({ name: 'Laptops', active: true }),
       findFirst: jest.fn().mockResolvedValue({ name: 'Laptops', active: true }),
     },
-    assetHistory: {create: jest.fn()},
+    assetAssignment: {
+      findFirst: jest.fn().mockResolvedValue(null),
+    },
+    assetHistory: { create: jest.fn() },
     employee: {
       findUnique: jest.fn(),
     },
@@ -90,6 +93,54 @@ describe('AssetService', () => {
 
       const result = await service.findOne(1);
       expect(result).toEqual(asset);
+    });
+  });
+
+  describe('update', () => {
+    it('should throw NotFoundException if asset to update is not found', async () => {
+      mockPrisma.asset.findUnique.mockResolvedValue(null);
+
+      await expect(service.update(999, { name: 'Updated' })).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if setting status to assigned directly', async () => {
+      mockPrisma.asset.findUnique.mockResolvedValue({ id: 1, status: 'available', category: 'Laptops' });
+
+      await expect(service.update(1, { status: 'assigned' })).rejects.toThrow(BadRequestException);
+    });
+
+    it('should update asset and log status change in history when status is modified', async () => {
+      const existing = { id: 1, status: 'available', category: 'Laptops', employeeId: null };
+      mockPrisma.asset.findUnique.mockResolvedValue(existing);
+      mockPrisma.asset.update.mockResolvedValue({ ...existing, status: 'under_repair' });
+
+      const result = await service.update(1, { status: 'under_repair', notes: 'Screen broken' });
+      expect(result.status).toBe('under_repair');
+      expect(mockPrisma.assetHistory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          assetId: 1,
+          action: 'STATUS_CHANGED',
+          previousStatus: 'available',
+          newStatus: 'under_repair',
+        }),
+      });
+    });
+  });
+
+  describe('remove', () => {
+    it('should transition asset status to retired', async () => {
+      const existing = { id: 1, status: 'available', category: 'Laptops', employeeId: null };
+      mockPrisma.asset.findUnique.mockResolvedValue(existing);
+      mockPrisma.asset.update.mockResolvedValue({ ...existing, status: 'retired' });
+
+      const result = await service.remove(1);
+      expect(result.status).toBe('retired');
+      expect(mockPrisma.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 1 },
+          data: expect.objectContaining({ status: 'retired' }),
+        }),
+      );
     });
   });
 });
